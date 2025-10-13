@@ -101,7 +101,7 @@ fun NewNote(
                 singleLine = false,
                 maxLines = Int.MAX_VALUE,
                 keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Email,
+                    keyboardType = KeyboardType.Text,
                     imeAction = ImeAction.Send
                 ), colors = TextFieldDefaults.colors(
                     disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
