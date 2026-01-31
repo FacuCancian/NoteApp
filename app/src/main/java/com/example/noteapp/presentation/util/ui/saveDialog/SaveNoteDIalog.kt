@@ -1,4 +1,4 @@
-package com.example.noteapp.ui.note.components
+package com.example.noteapp.presentation.util.ui.saveDialog
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer

@@ -3,7 +3,7 @@ package com.example.noteapp.presentation.di
 import android.content.Context
 import androidx.room.Room
 import com.example.noteapp.data.local.dao.NoteDao
-import com.example.noteapp.data.local.db.noteDataBase
+import com.example.noteapp.data.local.db.NoteDataBase
 import com.example.noteapp.data.repository.NoteRepositoryImpl
 import com.example.noteapp.domain.repository.NoteRepository
 import com.example.noteapp.domain.useCase.DeleteNote
@@ -13,14 +13,13 @@ import com.example.noteapp.domain.useCase.GetNoteByName
 import com.example.noteapp.domain.useCase.InsertNote
 import com.example.noteapp.domain.useCase.NoteUseCases
 import com.example.noteapp.domain.useCase.ShareNote
-import com.example.noteapp.presentation.noteList.NoteListViewModel
+import com.example.noteapp.presentation.util.AlarmScheduler
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
-import javax.inject.Inject
 
 
 @Module
@@ -29,12 +28,12 @@ object AppModule {
     //unique instance
     @Provides
     @Singleton
-    fun provideNoteDataBase(@ApplicationContext context: Context): noteDataBase {
-        return Room.databaseBuilder(context, noteDataBase::class.java, "note_database").build()
+    fun provideNoteDataBase(@ApplicationContext context: Context): NoteDataBase {
+        return Room.databaseBuilder(context, NoteDataBase::class.java, "note_database").build()
     }
 
     @Provides
-    fun provideNoteDao(dataBase: noteDataBase): NoteDao {
+    fun provideNoteDao(dataBase: NoteDataBase): NoteDao {
         return dataBase.noteDao()
     }
 
@@ -72,4 +71,11 @@ object AppModule {
     fun provideGetNoteByName(repository: NoteRepository): GetNoteByName =
         GetNoteByName(repository)
 
+    @Provides
+    @Singleton
+    fun provideAlarmScheduler(
+        @ApplicationContext context: Context
+    ): AlarmScheduler {
+        return AlarmScheduler(context)
+    }
 }

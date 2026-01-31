@@ -39,4 +39,7 @@
     <string name="share_note_text">Compartir</string>
     <string name="share_text_plain">text/plain</string>
 
+    <string name="bell_init">Iniciar Alarma</string>
+    <string name="bell_title">Alarma</string>
+
 </resources>

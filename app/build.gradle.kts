@@ -47,6 +47,11 @@ android {
 }
 dependencies {
     implementation(libs.core.ktx)
+    implementation(libs.androidx.databinding.adapters)
+    implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.foundation)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.foundation.layout)
     val room_version = "2.7.2"
 
     implementation("androidx.room:room-runtime:$room_version")
@@ -97,4 +102,10 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     testImplementation(kotlin("test"))
+    implementation("androidx.compose.material:material-icons-extended")
+
+    implementation("androidx.compose.ui:ui-text")
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.material3:material3")
+
 }

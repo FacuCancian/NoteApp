@@ -1,4 +1,4 @@
-package com.example.noteapp.ui.note.components
+package com.example.noteapp.presentation.util.ui.saveDialog
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
@@ -16,7 +16,7 @@ fun SaveOrOverwriteDialog(
     onDismissSave: () -> Unit,
     onDismissOverwrite: () -> Unit,
     onSaveRequested: (String) -> Unit,
-    onOverwriteConfirmed: () -> Unit
+    onOverwriteConfirmed: () -> Unit,
 ) {
     if (showSaveDialog) {
         SaveNoteDialog(
@@ -50,4 +50,5 @@ fun SaveOrOverwriteDialog(
             }
         )
     }
+
 }

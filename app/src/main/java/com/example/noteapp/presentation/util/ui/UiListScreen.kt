@@ -1,0 +1,204 @@
+package com.example.noteapp.presentation.util.ui
+
+import android.os.Build
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberTimePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.noteapp.R
+import com.example.noteapp.data.local.entities.Note
+import com.example.noteapp.presentation.noteList.NoteListViewModel
+import com.example.noteapp.presentation.util.calculateNextAlarmTime
+import com.example.noteapp.presentation.util.requestExactAlarmPermission
+import kotlin.collections.ifEmpty
+
+@Composable
+fun NoteCardContent(
+    note: Note,
+    onClick: () -> Unit,
+    onLongClick: () ->Unit,
+    onDeleteClick: () -> Unit,
+    onAlarmClick: () -> Unit,
+    onShareClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
+    ) {
+        Row(Modifier.padding(16.dp)) {
+            Text(note.name, modifier = Modifier.weight(1f), fontSize = 18.sp)
+
+            IconButton(onClick = onAlarmClick) {
+                if (note.hasReminder == true) {
+                    Icon(
+                        painter = painterResource(R.drawable.bell_active_icon),
+                        contentDescription = stringResource(R.string.bell_init),
+                        tint = Color(0xFF64B5F6)
+                    )
+                } else {
+                    Icon(
+                        painter = painterResource(R.drawable.bell_icon),
+                        contentDescription = stringResource(R.string.bell_title),
+                        tint = Color(0xFF64B5F6)
+                    )
+                }
+            }
+
+            IconButton(onClick = onDeleteClick) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = stringResource(R.string.note_Item_list_button_description),
+                    tint = Color.Red
+                )
+            }
+            IconButton(onClick = onShareClick) {
+                Icon(
+                    imageVector = Icons.Default.Share,
+                    contentDescription = stringResource(R.string.share_note_text),
+                    tint = Color(0xFF64B5F6)
+                )
+            }
+
+        }
+    }
+}
+@Composable
+fun DeleteNoteDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Eliminar nota") },
+        text = { Text("¿Seguro que deseas eliminarla?") },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text("Eliminar", color = Color.Red)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        }
+    )
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AlarmBottomSheet(
+    note: Note,
+    viewModel: NoteListViewModel,
+    onDismiss: () -> Unit
+) {
+    val context = LocalContext.current
+
+    var selectedDays by remember { mutableStateOf(note.repeatDays ?: emptyList()) }
+
+    val timeState = rememberTimePickerState(12, 0, true)
+
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+
+        Column(Modifier.fillMaxWidth().padding(24.dp)) {
+
+            Text("Alarma", style = MaterialTheme.typography.titleLarge)
+
+            TimePicker(state = timeState)
+
+            RepeatDaysRow(
+                selectedDays = selectedDays,
+                onChange = { selectedDays = it }
+            )
+
+            Button(onClick = {
+                val triggerTime = calculateNextAlarmTime(
+                    timeState.hour,
+                    timeState.minute,
+                    selectedDays
+                )
+
+                val updated = note.copy(
+                    reminderDateTime = triggerTime,
+                    repeatDays = selectedDays.ifEmpty { null },
+                    hasReminder = true
+                )
+
+                viewModel.insertNote(updated)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    requestExactAlarmPermission(context)
+                }
+                viewModel.setAlarm(updated)
+                onDismiss()
+            }) {
+                Text("Guardar")
+            }
+        }
+    }
+}
+@Composable
+fun RepeatDaysRow(
+    selectedDays: List<Int>,
+    onChange: (List<Int>) -> Unit
+) {
+    val dayLetters = listOf("L","M","M","J","V","S","D")
+
+    Row(Modifier.fillMaxWidth(), Arrangement.SpaceEvenly) {
+        dayLetters.forEachIndexed { index, letter ->
+            val dayIndex = index + 1
+            val isSelected = selectedDays.contains(dayIndex)
+
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.LightGray)
+                    .clickable {
+                        onChange(
+                            if (isSelected) selectedDays - dayIndex
+                            else selectedDays + dayIndex
+                        )
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(letter, color = if (isSelected) Color.White else Color.Black)
+            }
+        }
+    }
+}
+
