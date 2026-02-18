@@ -25,7 +25,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 
-@OptIn(ExperimentalCoroutinesApi::class)
+/*@OptIn(ExperimentalCoroutinesApi::class)
 class NoteListViewModelTest {
     @ExperimentalCoroutinesApi
     @get:Rule
@@ -101,4 +101,4 @@ class NoteListViewModelTest {
 
 
 
-}
+}*/

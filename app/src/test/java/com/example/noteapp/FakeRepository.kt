@@ -14,6 +14,10 @@ class FakeRepository : NoteRepository {
         return _notesFlow
     }
 
+    override suspend fun getNoteById(id: Long): Note? {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun getNoteByName(name: String): Note? {
         return noteList.find { it.name == name }
     }
