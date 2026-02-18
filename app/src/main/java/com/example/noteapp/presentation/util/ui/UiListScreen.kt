@@ -8,9 +8,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -135,7 +138,8 @@ fun AlarmBottomSheet(
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
 
-        Column(Modifier.fillMaxWidth().padding(24.dp)) {
+        Column(Modifier.fillMaxWidth().padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally) {
 
             Text("Alarma", style = MaterialTheme.typography.titleLarge)
 
@@ -145,28 +149,51 @@ fun AlarmBottomSheet(
                 selectedDays = selectedDays,
                 onChange = { selectedDays = it }
             )
+            Spacer(modifier = Modifier.height(24.dp))
 
-            Button(onClick = {
-                val triggerTime = calculateNextAlarmTime(
-                    timeState.hour,
-                    timeState.minute,
-                    selectedDays
-                )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
 
-                val updated = note.copy(
-                    reminderDateTime = triggerTime,
-                    repeatDays = selectedDays.ifEmpty { null },
-                    hasReminder = true
-                )
-
-                viewModel.insertNote(updated)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    requestExactAlarmPermission(context)
+                TextButton(
+                    onClick = {
+                        viewModel.cancelAlarm(note)
+                        onDismiss()
+                    }
+                ) {
+                    Text("Cancelar")
                 }
-                viewModel.setAlarm(updated)
-                onDismiss()
-            }) {
-                Text("Guardar")
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Button(
+                    onClick = {
+                        val triggerTime = calculateNextAlarmTime(
+                            timeState.hour,
+                            timeState.minute,
+                            selectedDays
+                        )
+
+                        val updated = note.copy(
+                            reminderDateTime = triggerTime,
+                            repeatDays = selectedDays.ifEmpty { null },
+                            hasReminder = true
+                        )
+
+                        viewModel.insertNote(updated)
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            requestExactAlarmPermission(context)
+                        }
+
+                        viewModel.setAlarm(updated)
+                        onDismiss()
+                    }
+                ) {
+                    Text("Guardar")
+                }
             }
         }
     }

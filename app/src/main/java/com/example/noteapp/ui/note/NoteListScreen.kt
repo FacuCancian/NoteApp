@@ -41,7 +41,7 @@ import com.example.noteapp.R
 import com.example.noteapp.data.local.entities.Note
 import com.example.noteapp.presentation.noteList.NoteListViewModel
 import com.example.noteapp.presentation.util.shareNoteAsTxt
-import com.example.noteapp.ui.note.components.SaveOrOverwriteDialog
+import com.example.noteapp.presentation.util.ui.saveDialog.SaveOrOverwriteDialog
 import kotlinx.coroutines.launch
 
 

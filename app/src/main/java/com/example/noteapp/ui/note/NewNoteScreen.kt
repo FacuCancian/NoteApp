@@ -36,9 +36,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.noteapp.R
+import com.example.noteapp.data.local.entities.Note
 import com.example.noteapp.presentation.noteList.NoteListViewModel
-import com.example.noteapp.ui.note.components.SaveNoteDialog
-import com.example.noteapp.ui.note.components.SaveOrOverwriteDialog
+import com.example.noteapp.presentation.util.ui.saveDialog.SaveOrOverwriteDialog
 import kotlinx.coroutines.launch
 
 @Composable
@@ -128,14 +128,19 @@ fun NewNote(
                         showSaveDialog = false
                         showOverwriteDialog = true
                     } else {
-                        viewModel.insertNote(content = text, name = title, id = null)
+                        viewModel.insertNote(Note(content = text, name = title))
                         showSaveDialog = false
                         back()
                     }
                 }
             },
             onOverwriteConfirmed = {
-                viewModel.insertNote(content = text, name = pendingTitle, id = null)
+                viewModel.insertNote(
+                    Note(
+                        content = text,
+                        name = pendingTitle
+                    )
+                )
                 showOverwriteDialog = false
                 back()
             }

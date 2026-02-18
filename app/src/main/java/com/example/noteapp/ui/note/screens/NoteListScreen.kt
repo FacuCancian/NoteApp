@@ -1,8 +1,6 @@
 package com.example.noteapp.ui.note.screens
 
-import android.content.Context
-import android.os.Build
-import androidx.annotation.RequiresApi
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn

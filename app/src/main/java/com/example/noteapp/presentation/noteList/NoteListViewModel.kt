@@ -6,9 +6,7 @@ import android.app.Application
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.noteapp.data.local.entities.Note
 import com.example.noteapp.domain.useCase.DeleteNote
@@ -17,8 +15,6 @@ import com.example.noteapp.domain.useCase.GetNoteByName
 import com.example.noteapp.domain.useCase.InsertNote
 import com.example.noteapp.presentation.util.AlarmScheduler
 import com.example.noteapp.ui.note.components.AlarmReceiver
-import dagger.hilt.android.HiltAndroidApp
-import dagger.hilt.android.internal.Contexts.getApplication
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -83,6 +79,7 @@ class NoteListViewModel @Inject constructor(
             _searchedNote.value = noteFind
         }
     }
+
     @SuppressLint("ScheduleExactAlarm")
     fun setAlarm(note: Note) {
         if (note.reminderDateTime == null) return
@@ -110,9 +107,11 @@ class NoteListViewModel @Inject constructor(
             pendingIntent
         )
     }
+
     fun snoozeNote(note: Note, minutes: Int) {
         alarmScheduler.snooze(note, minutes)
     }
+
     fun cancelAlarm(note: Note) {
         alarmScheduler.cancel(note)
 
