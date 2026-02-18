@@ -5,14 +5,17 @@ import java.util.Calendar
 fun calculateNextAlarmTime(
     hour: Int,
     minute: Int,
-    repeatDays: List<Int>?
+    repeatDays: List<Int>?,
+    nowOverride: Calendar? = null
 ): Long {
 
-    val now = Calendar.getInstance()
+    val now = nowOverride ?: Calendar.getInstance()
+
 
     // Base: today time selected
-    val alarmTime = Calendar.getInstance().apply {
-        set(Calendar.HOUR_OF_DAY, hour)
+    val alarmTime = (now.clone() as Calendar).apply {
+
+    set(Calendar.HOUR_OF_DAY, hour)
         set(Calendar.MINUTE, minute)
         set(Calendar.SECOND, 0)
         set(Calendar.MILLISECOND, 0)
@@ -50,7 +53,7 @@ fun calculateNextAlarmTime(
         if (candidateDay in repeatDays) {
 
             // for today, verify hour has pass
-            if (i == 0 && candidate.before(now)) {
+            if (i == 0 && !candidate.after(now)) {
                 continue
             }
 

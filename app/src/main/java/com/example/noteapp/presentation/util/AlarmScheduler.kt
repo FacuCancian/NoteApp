@@ -18,7 +18,7 @@ class AlarmScheduler @Inject constructor(private val context: Context) {
         if (note.reminderDateTime == null) return
 
         val intent = Intent(context, AlarmReceiver::class.java).apply {
-            putExtra("noteTitle", note.name)
+            putExtra("noteId", note.id)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(
@@ -35,6 +35,7 @@ class AlarmScheduler @Inject constructor(private val context: Context) {
             pendingIntent
         )
     }
+
     fun snooze(note: Note, minutes: Int) {
         val newTime = System.currentTimeMillis() + minutes * 60_000
 
@@ -45,6 +46,7 @@ class AlarmScheduler @Inject constructor(private val context: Context) {
 
         schedule(updated)
     }
+
     fun cancel(note: Note) {
         val intent = Intent(context, AlarmReceiver::class.java)
 
