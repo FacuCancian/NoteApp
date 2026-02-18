@@ -5,10 +5,14 @@ import com.example.noteapp.data.local.entities.Note
 import com.example.noteapp.domain.repository.NoteRepository
 import kotlinx.coroutines.flow.Flow
 
-class NoteRepositoryImpl(private val dao: NoteDao): NoteRepository{
+class NoteRepositoryImpl(private val dao: NoteDao) : NoteRepository {
 
     override fun getAllNotes(): Flow<List<Note>> {
         return dao.getAllNotes()
+    }
+
+    override suspend fun getNoteById(id: Long): Note? {
+        return dao.getNoteById(id)
     }
 
     override suspend fun getNoteByName(name: String): Note? {
@@ -16,7 +20,7 @@ class NoteRepositoryImpl(private val dao: NoteDao): NoteRepository{
     }
 
     override suspend fun insertNote(note: Note): Boolean {
-        return dao.insertNote(note)!= -1L
+        return dao.insertNote(note) != -1L
     }
 
     override suspend fun deleteNote(note: Note): Boolean {

@@ -23,4 +23,8 @@ interface NoteDao{
     @Query("SELECT * FROM Notes WHERE name = :name")
     suspend fun getNoteByName(name: String): Note?
 
+    @Query("SELECT * FROM Notes WHERE id = :id LIMIT 1")
+    suspend fun getNoteById(id: Long): Note?
+
+
 }
