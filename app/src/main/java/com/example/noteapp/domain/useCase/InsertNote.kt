@@ -7,7 +7,7 @@ import javax.inject.Inject
 
 
 class InsertNote @Inject constructor(private val repository: NoteRepository) {
-    suspend fun get(note:Note): Boolean {
+    suspend operator fun invoke(note: Note): Long {
         return repository.insertNote(note)
     }
 }

@@ -1,11 +1,6 @@
 package com.example.noteapp.presentation.noteList
 
-import android.annotation.SuppressLint
-import android.app.AlarmManager
 import android.app.Application
-import android.app.PendingIntent
-import android.content.Context
-import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.noteapp.data.local.entities.Note
@@ -14,7 +9,6 @@ import com.example.noteapp.domain.useCase.GetAllNotes
 import com.example.noteapp.domain.useCase.GetNoteByName
 import com.example.noteapp.domain.useCase.InsertNote
 import com.example.noteapp.presentation.util.AlarmScheduler
-import com.example.noteapp.ui.note.components.AlarmReceiver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -48,23 +42,30 @@ class NoteListViewModel @Inject constructor(
     public fun renameNote(note: Note, newName: String) {
         val updateNote = note.copy(name = newName)
         viewModelScope.launch {
-            insert.get(updateNote)
+            insert.invoke(updateNote)
         }
     }
 
     public fun insertNote(note: Note) {
         viewModelScope.launch {
-            insert.get(note)
+            insert.invoke(note)
         }
 
     }
 
-    public fun deleteNote(note: Note) {
+    fun deleteNote(note: Note) {
         viewModelScope.launch {
             val success = delete.delete(note)
             if (success == true) {
                 //TODO MSJ
             }
+        }
+    }
+    fun saveNoteWithAlarm(note: Note) {
+        viewModelScope.launch {
+            val generatedId = insert.invoke(note) // get a Long
+            val savedNote = note.copy(id = generatedId.toInt())
+            alarmScheduler.schedule(savedNote)
         }
     }
 
@@ -80,38 +81,6 @@ class NoteListViewModel @Inject constructor(
         }
     }
 
-    @SuppressLint("ScheduleExactAlarm")
-    fun setAlarm(note: Note) {
-        if (note.reminderDateTime == null) return
-
-        val context = getApplication<Application>().applicationContext
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
-        val intent = Intent(context, AlarmReceiver::class.java).apply {
-            putExtra("noteId", note.id)
-            putExtra("noteTitle", note.name)
-            putExtra("content", note.content)
-            putExtra("repeatDays", note.repeatDays?.toIntArray())
-        }
-
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            note.id ?: 0,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            note.reminderDateTime,
-            pendingIntent
-        )
-    }
-
-    fun snoozeNote(note: Note, minutes: Int) {
-        alarmScheduler.snooze(note, minutes)
-    }
-
     fun cancelAlarm(note: Note) {
         alarmScheduler.cancel(note)
 
@@ -120,7 +89,6 @@ class NoteListViewModel @Inject constructor(
             reminderDateTime = null,
             repeatDays = null
         )
-
         insertNote(updated)
     }
 

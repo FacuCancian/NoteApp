@@ -1,6 +1,7 @@
 package com.example.noteapp.presentation.util.ui
 
 import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -175,20 +176,15 @@ fun AlarmBottomSheet(
                             timeState.minute,
                             selectedDays
                         )
-
-                        val updated = note.copy(
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            requestExactAlarmPermission(context)
+                        }
+                        val noteWithTime = note.copy(
                             reminderDateTime = triggerTime,
                             repeatDays = selectedDays.ifEmpty { null },
                             hasReminder = true
                         )
-
-                        viewModel.insertNote(updated)
-
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                            requestExactAlarmPermission(context)
-                        }
-
-                        viewModel.setAlarm(updated)
+                        viewModel.saveNoteWithAlarm(noteWithTime)
                         onDismiss()
                     }
                 ) {

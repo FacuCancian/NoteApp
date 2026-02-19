@@ -41,10 +41,9 @@ fun NoteEditor(
     onLayout: (TextLayoutResult) -> Unit
 ) {
     //Box(weight + verticalScroll + imePadding) to a god layout
-    //Box(weight + verticalScroll + imePadding) to a god layout
     Box(
         modifier = modifier
-            .fillMaxWidth()   // 🔥 importante
+            .fillMaxWidth()
             .border(
                 width = 1.dp,
                 color = MaterialTheme.colorScheme.outline,
@@ -73,7 +72,6 @@ fun NoteEditor(
                         i == 0 ||
                                 newText.getOrNull(i - 1) == '\n' ||
                                 (newText.getOrNull(i - 2) == '.' && newText.getOrNull(i - 1) == ' ')
-
                     if (
                         shouldCapitalize &&
                         lastChar != null &&
@@ -95,8 +93,7 @@ fun NoteEditor(
                         selection = finalSelection
                     )
                 )
-            }
-            ,
+            },
             modifier = Modifier.fillMaxSize(),
             textStyle = TextStyle(
                 fontSize = 18.sp,
@@ -109,6 +106,7 @@ fun NoteEditor(
         )
     }
 }
+
 @Composable
 fun NewNoteDialogs(
     showSaveDialog: Boolean,
@@ -122,8 +120,7 @@ fun NewNoteDialogs(
     onBack: () -> Unit,
     onSaveRequested: (String) -> Unit,
     onOverwriteConfirmed: () -> Unit
-)
- {
+) {
     /* ========= DIÁLOGOS (TU LÓGICA ORIGINAL) ========= */
 
     SaveOrOverwriteDialog(
@@ -145,7 +142,10 @@ fun NewNoteDialogs(
                 TextButton(onClick = {
                     onConfirmSaveFromUnsaved()
                 }) {
-                    Text(stringResource(R.string.dialog_save),color = MaterialTheme.colorScheme.onSurface)
+                    Text(
+                        stringResource(R.string.dialog_save),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                 }
             },
             dismissButton = {
@@ -154,10 +154,16 @@ fun NewNoteDialogs(
                         onDismissUnsaved()
                         onBack()
                     }) {
-                        Text(stringResource(R.string.dialog_dismis),color = MaterialTheme.colorScheme.onSurface)
+                        Text(
+                            stringResource(R.string.dialog_dismis),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                     TextButton(onClick = onDismissUnsaved) {
-                        Text(stringResource(R.string.dialog_cancel),color = MaterialTheme.colorScheme.onSurface)
+                        Text(
+                            stringResource(R.string.dialog_cancel),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 }
             }

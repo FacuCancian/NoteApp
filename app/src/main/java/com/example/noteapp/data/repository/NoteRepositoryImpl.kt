@@ -19,8 +19,8 @@ class NoteRepositoryImpl(private val dao: NoteDao) : NoteRepository {
         return dao.getNoteByName(name)
     }
 
-    override suspend fun insertNote(note: Note): Boolean {
-        return dao.insertNote(note) != -1L
+    override suspend fun insertNote(note: Note): Long {
+        return dao.insertNote(note) // devuelve el id generado
     }
 
     override suspend fun deleteNote(note: Note): Boolean {
