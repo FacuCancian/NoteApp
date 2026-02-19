@@ -1,6 +1,10 @@
 package com.example.noteapp.ui.note.components
 
+import android.annotation.SuppressLint
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -21,6 +25,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 class AlarmActivity : ComponentActivity() {
+    override fun onResume() {
+        super.onResume()
+
+        if (!AlarmService.isRunning) {
+            Log.d("ALARM_DEBUG", "📴 Service not running, closing activity")
+            finish()
+        }
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,22 +78,35 @@ class AlarmActivity : ComponentActivity() {
                 }
             }
         }
-
-
-
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent) // 🔥 MUY IMPORTANTE
+
+        val newId = intent.getIntExtra("noteId", -1)
+        Log.d("ALARM_DEBUG", "🔄 onNewIntent received, noteId=$newId")
+    }
     private fun stopAlarm() {
+        val currentId = intent.getIntExtra("noteId", -1)
         val intent = Intent(this, AlarmService::class.java).apply {
             action = AlarmService.ACTION_STOP
+            putExtra("noteId", currentId)
+            putExtra("noteTitle", title)
         }
+        Log.d("ALARM_DEBUG", "🛑 stopAlarm called, noteId=$currentId")  // ✅ log para debug
+
         startService(intent)
         finish()
     }
 
     private fun snoozeAlarm() {
+        val currentId = intent.getIntExtra("noteId", -1)
+        val noteTitle = intent.getStringExtra("noteTitle")
         val intent = Intent(this, AlarmService::class.java).apply {
             action = AlarmService.ACTION_SNOOZE
+            putExtra("noteId", currentId)
+            putExtra("noteTitle", noteTitle)
         }
         startService(intent)
         finish()

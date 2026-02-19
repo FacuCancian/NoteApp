@@ -15,7 +15,7 @@ fun calculateNextAlarmTime(
     // Base: today time selected
     val alarmTime = (now.clone() as Calendar).apply {
 
-    set(Calendar.HOUR_OF_DAY, hour)
+        set(Calendar.HOUR_OF_DAY, hour)
         set(Calendar.MINUTE, minute)
         set(Calendar.SECOND, 0)
         set(Calendar.MILLISECOND, 0)
