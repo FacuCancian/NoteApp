@@ -15,7 +15,6 @@ import android.app.PendingIntent
 import android.content.Context
 import com.example.noteapp.ui.note.components.AlarmReceiver
 import android.provider.Settings
-import android.util.Log
 
 class AlarmService : Service() {
 
@@ -30,26 +29,25 @@ class AlarmService : Service() {
     }
 
     private var ringtone: Ringtone? = null
-    private var alarmTitle: String = "Alarma"
+    private var alarmTitle: String = AlarmConstants.DEFAULT
     //next here, no coection, go to startForegroundAlarm()
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val noteId = intent?.getIntExtra("noteId", -1) ?: return START_NOT_STICKY
-        alarmTitle = intent?.getStringExtra("noteTitle") ?: "Alarma"
+        val noteId =
+            intent?.getIntExtra(AlarmConstants.EXTRA_NOTE_ID, -1) ?: return START_NOT_STICKY
+        alarmTitle =
+            intent?.getStringExtra(AlarmConstants.EXTRA_NOTE_TITLE) ?: AlarmConstants.DEFAULT
 
 
         when (intent?.action) {
             ACTION_STOP -> {
-                stopAlarm(noteId)
-                Log.d("ALARM_DEBUG", "⛔ Alarm stopped for noteId=$noteId")
+                stopAlarm()
                 return START_NOT_STICKY
             }
 
             ACTION_SNOOZE -> {
                 snoozeAlarm(intent)
-                stopAlarm(noteId)
-                Log.d("ALARM_DEBUG", "⏰ Alarm snoozed for noteId=$noteId") // ⚡
-
+                stopAlarm()
                 return START_NOT_STICKY
             }
 
@@ -62,21 +60,21 @@ class AlarmService : Service() {
     private fun startForegroundAlarm(intent: Intent?) {
         isRunning = true
         createChannel()
-        val noteId = intent?.getIntExtra("noteId", -1) ?: return
+        val noteId = intent?.getIntExtra(AlarmConstants.EXTRA_NOTE_ID, -1) ?: return
 
         // Stop y Snooze for requestCode unique per note
         val stopRequestCode = (noteId * 10 + 0)
         val snoozeRequestCode = (noteId * 10 + 1)
 
         val stopIntent = Intent(this, AlarmService::class.java).apply {
-            putExtra("noteId", noteId)
-            putExtra("noteTitle", alarmTitle)
+            putExtra(AlarmConstants.EXTRA_NOTE_ID, noteId)
+            putExtra(AlarmConstants.EXTRA_NOTE_TITLE, alarmTitle)
             action = ACTION_STOP
         }
 
         val snoozeIntent = Intent(this, AlarmService::class.java).apply {
-            putExtra("noteId", noteId)
-            putExtra("noteTitle", alarmTitle)
+            putExtra(AlarmConstants.EXTRA_NOTE_ID, noteId)
+            putExtra(AlarmConstants.EXTRA_NOTE_TITLE, alarmTitle)
             action = ACTION_SNOOZE
         }
 
@@ -99,12 +97,12 @@ class AlarmService : Service() {
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
             .setContentTitle(alarmTitle)
-            .setContentText("Sonando…")
+            .setContentText(AlarmConstants.SOUND)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setOngoing(true)
-            .addAction(android.R.drawable.ic_media_pause, "Detener", stopPending)
-            .addAction(android.R.drawable.ic_media_pause, "Posponer 10 min", snoozePending)
+            .addAction(android.R.drawable.ic_media_pause, AlarmConstants.STOPALARM, stopPending)
+            .addAction(android.R.drawable.ic_media_pause, AlarmConstants.POS, snoozePending)
             .build()
 
         startForeground(NOTIFICATION_ID, notification)
@@ -116,7 +114,7 @@ class AlarmService : Service() {
         }
     }
 
-    private fun stopAlarm(noteId: Int) {
+    private fun stopAlarm() {
         ringtone?.stop()
         ringtone = null
         isRunning = false
@@ -129,7 +127,7 @@ class AlarmService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "Alarmas",
+                AlarmConstants.DEFAULTCHANNEL,
                 NotificationManager.IMPORTANCE_HIGH
             )
             getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
@@ -138,17 +136,17 @@ class AlarmService : Service() {
 
     @SuppressLint("ScheduleExactAlarm")
     private fun snoozeAlarm(intent: Intent) {
-        val noteId = intent.getIntExtra("noteId", -1)
+        val noteId = intent.getIntExtra(AlarmConstants.EXTRA_NOTE_ID, -1)
         if (noteId == -1) return
 
-        val newTime = System.currentTimeMillis() + 10 * 60_000 // 10 minutos
+        val newTime = System.currentTimeMillis() + 10 * 60_000 // 10 min
 
         val pending = PendingIntent.getBroadcast(
             this,
             noteId, // único por nota
             Intent(this, AlarmReceiver::class.java).apply {
-                putExtra("noteId", noteId)
-                putExtra("noteTitle", alarmTitle)
+                putExtra(AlarmConstants.EXTRA_NOTE_ID, noteId)
+                putExtra(AlarmConstants.EXTRA_NOTE_TITLE, alarmTitle)
             },
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )

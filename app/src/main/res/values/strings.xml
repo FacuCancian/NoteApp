@@ -42,4 +42,7 @@
     <string name="bell_init">Iniciar Alarma</string>
     <string name="bell_title">Alarma</string>
 
+    <string name="stop_alarm">Apagar Alarma</string>
+    <string name="pos_alarm">Posponer</string>
+
 </resources>

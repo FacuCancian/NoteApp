@@ -21,15 +21,17 @@ import android.view.WindowManager
 import android.widget.Toast
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.example.noteapp.R
+import com.example.noteapp.presentation.util.AlarmConstants
 
 class AlarmActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
 
         if (!AlarmService.isRunning) {
-            Log.d("ALARM_DEBUG", "📴 Service not running, closing activity")
             finish()
         }
     }
@@ -38,7 +40,7 @@ class AlarmActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val title = intent.getStringExtra("noteTitle") ?: "Alarma"
+        val title = intent.getStringExtra(AlarmConstants.EXTRA_NOTE_TITLE) ?: AlarmConstants.DEFAULT
 
         setContent {
             Box(
@@ -47,7 +49,6 @@ class AlarmActivity : ComponentActivity() {
                     .padding(24.dp)
             ) {
 
-                // --- TÍTULO CENTRADO ---
                 Text(
                     text = "⏰ $title",
                     fontSize = 28.sp,
@@ -55,7 +56,6 @@ class AlarmActivity : ComponentActivity() {
                     modifier = Modifier.align(Alignment.Center)
                 )
 
-                // --- BOTONES ABAJO ---
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -67,13 +67,13 @@ class AlarmActivity : ComponentActivity() {
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
                         onClick = { stopAlarm() }
                     ) {
-                        Text("Apagar")
+                        Text(stringResource(R.string.stop_alarm))
                     }
 
                     Button(
                         onClick = { snoozeAlarm() }
                     ) {
-                        Text("Posponer")
+                        Text(stringResource(R.string.pos_alarm))
                     }
                 }
             }
@@ -82,31 +82,27 @@ class AlarmActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        setIntent(intent) // 🔥 MUY IMPORTANTE
-
-        val newId = intent.getIntExtra("noteId", -1)
-        Log.d("ALARM_DEBUG", "🔄 onNewIntent received, noteId=$newId")
+        setIntent(intent)
     }
+
     private fun stopAlarm() {
-        val currentId = intent.getIntExtra("noteId", -1)
+        val currentId = intent.getIntExtra(AlarmConstants.EXTRA_NOTE_ID, -1)
         val intent = Intent(this, AlarmService::class.java).apply {
             action = AlarmService.ACTION_STOP
-            putExtra("noteId", currentId)
-            putExtra("noteTitle", title)
+            putExtra(AlarmConstants.EXTRA_NOTE_ID, currentId)
+            putExtra(AlarmConstants.EXTRA_NOTE_TITLE, title)
         }
-        Log.d("ALARM_DEBUG", "🛑 stopAlarm called, noteId=$currentId")  // ✅ log para debug
-
         startService(intent)
         finish()
     }
 
     private fun snoozeAlarm() {
-        val currentId = intent.getIntExtra("noteId", -1)
-        val noteTitle = intent.getStringExtra("noteTitle")
+        val currentId = intent.getIntExtra(AlarmConstants.EXTRA_NOTE_ID, -1)
+        val noteTitle = intent.getStringExtra(AlarmConstants.EXTRA_NOTE_TITLE)
         val intent = Intent(this, AlarmService::class.java).apply {
             action = AlarmService.ACTION_SNOOZE
-            putExtra("noteId", currentId)
-            putExtra("noteTitle", noteTitle)
+            putExtra(AlarmConstants.EXTRA_NOTE_ID, currentId)
+            putExtra(AlarmConstants.EXTRA_NOTE_TITLE, noteTitle)
         }
         startService(intent)
         finish()

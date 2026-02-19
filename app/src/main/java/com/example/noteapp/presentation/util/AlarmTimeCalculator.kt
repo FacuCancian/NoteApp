@@ -24,7 +24,7 @@ fun calculateNextAlarmTime(
     //  no day selected
     if (repeatDays.isNullOrEmpty()) {
 
-        // Si la hora ya pasó → mañana
+        // time pass -> tomorrow
         if (alarmTime.before(now)) {
             alarmTime.add(Calendar.DAY_OF_MONTH, 1)
         }

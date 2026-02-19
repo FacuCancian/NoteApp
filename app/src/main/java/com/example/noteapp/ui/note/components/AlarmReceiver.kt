@@ -7,6 +7,7 @@ import android.content.Intent
 import android.util.Log
 import androidx.core.content.ContextCompat
 import com.example.noteapp.domain.repository.NoteRepository
+import com.example.noteapp.presentation.util.AlarmConstants
 import com.example.noteapp.presentation.util.AlarmScheduler
 import com.example.noteapp.presentation.util.AlarmService
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,12 +25,12 @@ class AlarmReceiver : BroadcastReceiver() {
     //AlarmTime has come...
     override fun onReceive(context: Context, intent: Intent) {
 
-        val noteId = intent.getIntExtra("noteId", -1)
-        val title = intent.getStringExtra("noteTitle")
+        val noteId = intent.getIntExtra(AlarmConstants.EXTRA_NOTE_ID, -1)
+        val title = intent.getStringExtra(AlarmConstants.EXTRA_NOTE_TITLE)
         //create and launch activity
         val activityIntent = Intent(context, AlarmActivity::class.java).apply {
-            putExtra("noteId", noteId)
-            putExtra("noteTitle", title)
+            putExtra(AlarmConstants.EXTRA_NOTE_ID, noteId)
+            putExtra(AlarmConstants.EXTRA_NOTE_TITLE, title)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
@@ -37,8 +38,8 @@ class AlarmReceiver : BroadcastReceiver() {
         context.startActivity(activityIntent)
         //launch service
         val serviceIntent = Intent(context, AlarmService::class.java).apply {
-            putExtra("noteId", noteId)
-            putExtra("noteTitle", title)
+            putExtra(AlarmConstants.EXTRA_NOTE_ID, noteId)
+            putExtra(AlarmConstants.EXTRA_NOTE_TITLE, title)
         }
         ContextCompat.startForegroundService(context, serviceIntent)
     }

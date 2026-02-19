@@ -15,11 +15,11 @@ class AlarmScheduler @Inject constructor(private val context: Context) {
 
     @SuppressLint("ScheduleExactAlarm")
     fun schedule(note: Note) {
-        if (note.reminderDateTime == null) return
+        if (note.reminderDateTime == null || note.id == null) return
 
         val intent = Intent(context, AlarmReceiver::class.java).apply {
-            putExtra("noteId", note.id)
-            putExtra("noteTitle", note.name)
+            putExtra(AlarmConstants.EXTRA_NOTE_ID, note.id)
+            putExtra(AlarmConstants.EXTRA_NOTE_TITLE, note.name)
 
         }
 
@@ -46,7 +46,6 @@ class AlarmScheduler @Inject constructor(private val context: Context) {
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        Log.d("ALARM_DEBUG", "⛔ Canceling alarm for noteId=${note.id}")
         alarmManager.cancel(pendingIntent)
     }
 
