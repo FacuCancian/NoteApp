@@ -56,7 +56,9 @@ import com.example.noteapp.presentation.util.calculateNextAlarmTime
 import com.example.noteapp.presentation.util.requestExactAlarmPermission
 import java.util.Calendar
 import kotlin.collections.ifEmpty
-
+object WeekUtils {
+    val weekLetters = listOf("L","M","MI","J","V","S","D")
+}
 @Composable
 fun NoteCardContent(
     note: Note,
@@ -222,7 +224,7 @@ fun RepeatDaysRow(
     selectedDays: List<Int>,
     onChange: (List<Int>) -> Unit
 ) {
-    val dayLetters = listOf("L","M","M","J","V","S","D")
+    val dayLetters = WeekUtils.weekLetters
 
     Row(Modifier.fillMaxWidth(), Arrangement.SpaceEvenly) {
         dayLetters.forEachIndexed { index, letter ->
@@ -231,7 +233,7 @@ fun RepeatDaysRow(
 
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(45.dp)
                     .clip(CircleShape)
                     .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.LightGray)
                     .clickable {
