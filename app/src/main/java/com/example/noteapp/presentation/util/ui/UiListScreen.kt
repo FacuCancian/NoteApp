@@ -1,7 +1,6 @@
 package com.example.noteapp.presentation.util.ui
 
 import android.os.Build
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -50,11 +49,10 @@ import androidx.compose.ui.unit.sp
 import com.example.noteapp.R
 import com.example.noteapp.data.local.entities.Note
 import com.example.noteapp.presentation.noteList.NoteListViewModel
-import com.example.noteapp.presentation.util.AlarmConstants
+import com.example.noteapp.presentation.util.alarmUtils.AlarmConstants
 import com.example.noteapp.presentation.util.alarmUtils.AlarmTimeUtils
-import com.example.noteapp.presentation.util.calculateNextAlarmTime
-import com.example.noteapp.presentation.util.requestExactAlarmPermission
-import java.util.Calendar
+import com.example.noteapp.presentation.alarm.calculateNextAlarmTime
+import com.example.noteapp.presentation.alarm.requestExactAlarmPermission
 import kotlin.collections.ifEmpty
 object WeekUtils {
     val weekLetters = listOf("L","M","MI","J","V","S","D")

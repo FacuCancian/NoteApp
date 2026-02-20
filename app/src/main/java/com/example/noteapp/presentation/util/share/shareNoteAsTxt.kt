@@ -1,4 +1,4 @@
-package com.example.noteapp.presentation.util
+package com.example.noteapp.presentation.util.share
 
 import android.content.Context
 import android.content.Intent

@@ -1,5 +1,6 @@
-package com.example.noteapp.presentation.util
+package com.example.noteapp.presentation.alarm
 
+import android.R
 import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.NotificationChannel
@@ -12,9 +13,9 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import android.app.PendingIntent
-import android.content.Context
 import com.example.noteapp.ui.note.components.AlarmReceiver
 import android.provider.Settings
+import com.example.noteapp.presentation.util.alarmUtils.AlarmConstants
 
 class AlarmService : Service() {
 
@@ -69,13 +70,13 @@ class AlarmService : Service() {
         val stopIntent = Intent(this, AlarmService::class.java).apply {
             putExtra(AlarmConstants.EXTRA_NOTE_ID, noteId)
             putExtra(AlarmConstants.EXTRA_NOTE_TITLE, alarmTitle)
-            action = ACTION_STOP
+            action  = ACTION_STOP
         }
 
         val snoozeIntent = Intent(this, AlarmService::class.java).apply {
             putExtra(AlarmConstants.EXTRA_NOTE_ID, noteId)
             putExtra(AlarmConstants.EXTRA_NOTE_TITLE, alarmTitle)
-            action = ACTION_SNOOZE
+            action  = ACTION_SNOOZE
         }
 
 
@@ -95,14 +96,14 @@ class AlarmService : Service() {
             )
 
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+            .setSmallIcon(R.drawable.ic_lock_idle_alarm)
             .setContentTitle(alarmTitle)
             .setContentText(AlarmConstants.SOUND)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setOngoing(true)
-            .addAction(android.R.drawable.ic_media_pause, AlarmConstants.STOPALARM, stopPending)
-            .addAction(android.R.drawable.ic_media_pause, AlarmConstants.POS, snoozePending)
+            .addAction(R.drawable.ic_media_pause, AlarmConstants.STOPALARM, stopPending)
+            .addAction(R.drawable.ic_media_pause, AlarmConstants.POS, snoozePending)
             .build()
 
         startForeground(NOTIFICATION_ID, notification)
@@ -151,7 +152,7 @@ class AlarmService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             newTime,

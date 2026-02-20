@@ -1,6 +1,6 @@
 package com.example.noteapp
 
-import com.example.noteapp.presentation.util.calculateNextAlarmTime
+import com.example.noteapp.presentation.alarm.calculateNextAlarmTime
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.util.Calendar

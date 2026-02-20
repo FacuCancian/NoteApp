@@ -26,7 +26,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.noteapp.R
 import com.example.noteapp.data.local.entities.Note
 import com.example.noteapp.presentation.noteList.NoteListViewModel
-import com.example.noteapp.presentation.util.shareNoteAsTxt
+import com.example.noteapp.presentation.util.share.shareNoteAsTxt
 import com.example.noteapp.presentation.util.ui.AlarmBottomSheet
 import com.example.noteapp.presentation.util.ui.DeleteNoteDialog
 import com.example.noteapp.presentation.util.ui.NoteCardContent

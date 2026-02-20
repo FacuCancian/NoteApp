@@ -1,4 +1,4 @@
-package com.example.noteapp.presentation.util
+package com.example.noteapp.presentation.util.alarmUtils
 
 object AlarmConstants {
     const val EXTRA_NOTE_ID = "extra_note_id"

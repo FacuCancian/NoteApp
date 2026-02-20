@@ -1,4 +1,4 @@
-package com.example.noteapp.presentation.util
+package com.example.noteapp.presentation.alarm
 
 import android.annotation.SuppressLint
 import android.app.PendingIntent
@@ -7,7 +7,7 @@ import android.content.Intent
 import com.example.noteapp.data.local.entities.Note
 import com.example.noteapp.ui.note.components.AlarmReceiver
 import android.app.AlarmManager
-import android.util.Log
+import com.example.noteapp.presentation.util.alarmUtils.AlarmConstants
 import javax.inject.Inject
 
 class AlarmScheduler @Inject constructor(private val context: Context) {

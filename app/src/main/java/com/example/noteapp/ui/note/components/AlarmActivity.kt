@@ -1,13 +1,7 @@
 package com.example.noteapp.ui.note.components
 
-import android.annotation.SuppressLint
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
-import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -16,16 +10,14 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.noteapp.presentation.util.AlarmService
-import android.view.WindowManager
-import android.widget.Toast
+import com.example.noteapp.presentation.alarm.AlarmService
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.example.noteapp.R
-import com.example.noteapp.presentation.util.AlarmConstants
+import com.example.noteapp.presentation.util.alarmUtils.AlarmConstants
 
 class AlarmActivity : ComponentActivity() {
     override fun onResume() {

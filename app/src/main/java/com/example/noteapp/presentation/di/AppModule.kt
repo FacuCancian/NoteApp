@@ -13,7 +13,7 @@ import com.example.noteapp.domain.useCase.GetNoteByName
 import com.example.noteapp.domain.useCase.InsertNote
 import com.example.noteapp.domain.useCase.NoteUseCases
 import com.example.noteapp.domain.useCase.ShareNote
-import com.example.noteapp.presentation.util.AlarmScheduler
+import com.example.noteapp.presentation.alarm.AlarmScheduler
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

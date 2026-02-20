@@ -41,7 +41,7 @@
             android:turnScreenOn="true"></activity>
 
         <service
-            android:name=".presentation.util.AlarmService"
+            android:name=".presentation.alarm.AlarmService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
 

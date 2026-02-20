@@ -4,12 +4,11 @@ package com.example.noteapp.ui.note.components
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.core.content.ContextCompat
 import com.example.noteapp.domain.repository.NoteRepository
-import com.example.noteapp.presentation.util.AlarmConstants
-import com.example.noteapp.presentation.util.AlarmScheduler
-import com.example.noteapp.presentation.util.AlarmService
+import com.example.noteapp.presentation.util.alarmUtils.AlarmConstants
+import com.example.noteapp.presentation.alarm.AlarmScheduler
+import com.example.noteapp.presentation.alarm.AlarmService
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

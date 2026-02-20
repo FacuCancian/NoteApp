@@ -8,7 +8,7 @@ import com.example.noteapp.domain.useCase.DeleteNote
 import com.example.noteapp.domain.useCase.GetAllNotes
 import com.example.noteapp.domain.useCase.GetNoteByName
 import com.example.noteapp.domain.useCase.InsertNote
-import com.example.noteapp.presentation.util.AlarmScheduler
+import com.example.noteapp.presentation.alarm.AlarmScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
