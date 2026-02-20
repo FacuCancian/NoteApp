@@ -23,9 +23,9 @@ import com.example.noteapp.R
 fun SaveNoteDialog(
     onDismiss: () -> Unit,
     onSave: (String) -> Unit,
-    initialTitle: String = ""
+    pendingTitle : String
 ) {
-    var noteTitle by remember { mutableStateOf(initialTitle) }
+    var noteTitle by remember { mutableStateOf(pendingTitle) }
 
     AlertDialog(
         onDismissRequest = { onDismiss() },

@@ -84,12 +84,16 @@ fun NoteItemList(
     var showAlarmSheet by remember { mutableStateOf(false) }
     var showChangeNameDialog by remember { mutableStateOf(false) }
     var showOverwriteDialog by remember { mutableStateOf(false) }
-    var editedTitle by remember { mutableStateOf(note.name) }
+
+    var editedTitle by remember(note.id) { mutableStateOf(note.name) }
     val context = LocalContext.current
     NoteCardContent(
         note = note,
         onClick = { onCardClick(note) },
-        onLongClick = { showChangeNameDialog = true },
+        onLongClick = {
+            editedTitle = note.name
+            showChangeNameDialog = true
+        },
         onDeleteClick = { showDeleteDialog = true },
         onAlarmClick = { showAlarmSheet = true },
         onShareClick = { shareNoteAsTxt(context, note) },

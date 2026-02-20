@@ -31,6 +31,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -148,10 +149,15 @@ fun AlarmBottomSheet(
         initialMinute,
         true
     )
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+    ModalBottomSheet(onDismissRequest = onDismiss,sheetState = sheetState) {
 
-        Column(Modifier.fillMaxWidth().padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            Modifier.fillMaxWidth().padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
 
             Text(AlarmConstants.DEFAULT, style = MaterialTheme.typography.titleLarge)
 
@@ -197,7 +203,8 @@ fun AlarmBottomSheet(
                         )
                         viewModel.saveNoteWithAlarm(noteWithTime)
 
-                        val message = "Alarma programada en ${AlarmTimeUtils.formatTimeUntil(triggerTime)}"
+                        val message =
+                            "Alarma programada en ${AlarmTimeUtils.formatTimeUntil(triggerTime)}"
                         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
 
                         onDismiss()

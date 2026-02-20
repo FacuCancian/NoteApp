@@ -20,6 +20,7 @@ fun SaveOrOverwriteDialog(
 ) {
     if (showSaveDialog) {
         SaveNoteDialog(
+            pendingTitle = pendingTitle,
             onDismiss = onDismissSave,
             onSave = { title -> onSaveRequested(title) }
         )
