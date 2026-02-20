@@ -35,4 +35,8 @@ class NoteRepositoryImpl(private val dao: NoteDao) : NoteRepository {
         TODO("Not yet implemented")
     }
 
+    override suspend fun searchNotes(query: String): Flow<List<Note>> {
+        return dao.searchNotesByName(query)
+    }
+
 }

@@ -14,6 +14,8 @@
     <string name="dialog_cancel">Cancelar</string>
     <string name="dialog_delete">Eliminar</string>
 
+    <string name="search_note">Buscar</string>
+
     <string name="save_note_dialog_placeholder">Título de la nota</string>
     <string name="save_note_dialog_sub_title">Escribe un nombre para la nota:</string>
 

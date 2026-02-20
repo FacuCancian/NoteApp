@@ -2,13 +2,20 @@ package com.example.noteapp.ui.note.screens
 
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -37,11 +44,13 @@ import kotlinx.coroutines.launch
 @Composable
 fun NoteList(
     noteListViewModel: NoteListViewModel,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     onNoteClick: (Note) -> Unit,
     onButtonClick: () -> Unit
 ) {
-    val notes by noteListViewModel.notes.collectAsState()
+    val notes by noteListViewModel.filteredNotes.collectAsState()
+    val searchQuery by noteListViewModel.searchQuery.collectAsState()
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
@@ -56,18 +65,26 @@ fun NoteList(
             }
         }
     ) { innerPadding ->
-        LazyColumn(
-            Modifier.padding(innerPadding).padding(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(notes) { note ->
-                NoteItemList(
-                    note = note,
-                    onCardClick = { onNoteClick(note) },
-                    onDelete = { noteToDelete ->
-                        noteListViewModel.deleteNote(noteToDelete)
-                    },
-                )
+        Column() {
+            NoteSearchField(
+                query = searchQuery,
+                onQueryChange = { noteListViewModel.updateSearchQuery(it) }
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            //filtered notes
+            LazyColumn(
+                Modifier
+                    .fillMaxSize()
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(notes) { note ->
+                    NoteItemList(
+                        note = note,
+                        onCardClick = { onNoteClick(note) },
+                        onDelete = { noteListViewModel.deleteNote(it) }
+                    )
+                }
             }
         }
     }
@@ -149,4 +166,20 @@ fun NoteItemList(
         )
     }
 
+}
+@Composable
+fun NoteSearchField(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        label = { Text(stringResource(R.string.search_note)) },
+        singleLine = true,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp)
+    )
 }
