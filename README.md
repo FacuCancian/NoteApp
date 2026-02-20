@@ -12,7 +12,7 @@ Construida con **Jetpack Compose**, **Clean Architecture**, **MVVM**, **Room** y
 - 🗑️ Eliminar notas  
 - 📤 Compartir notas con cualquier app
 - ⏰ Alarma / recordatorio para las notas
--  Búsqueda de notas  
+- 📝 Búsqueda de notas  
 - 🎨 UI moderna con Jetpack Compose  
 - 💾 Guardado local con Room  
 - 🧩 Arquitectura limpia y escalable  
