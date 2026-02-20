@@ -2,6 +2,7 @@ package com.example.noteapp.presentation.util.ui
 
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -48,8 +49,11 @@ import androidx.compose.ui.unit.sp
 import com.example.noteapp.R
 import com.example.noteapp.data.local.entities.Note
 import com.example.noteapp.presentation.noteList.NoteListViewModel
+import com.example.noteapp.presentation.util.AlarmConstants
+import com.example.noteapp.presentation.util.alarmUtils.AlarmTimeUtils
 import com.example.noteapp.presentation.util.calculateNextAlarmTime
 import com.example.noteapp.presentation.util.requestExactAlarmPermission
+import java.util.Calendar
 import kotlin.collections.ifEmpty
 
 @Composable
@@ -110,20 +114,21 @@ fun DeleteNoteDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Eliminar nota") },
-        text = { Text("¿Seguro que deseas eliminarla?") },
+        title = { Text(stringResource(R.string.dialog_delete_title)) },
+        text = { Text(stringResource(R.string.dialog_delete_sub_title)) },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text("Eliminar", color = Color.Red)
+                Text(stringResource(R.string.dialog_delete), color = Color.Red)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar")
+                Text(stringResource(R.string.dialog_cancel))
             }
         }
     )
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlarmBottomSheet(
@@ -135,14 +140,20 @@ fun AlarmBottomSheet(
 
     var selectedDays by remember { mutableStateOf(note.repeatDays ?: emptyList()) }
 
-    val timeState = rememberTimePickerState(12, 0, true)
+    val (initialHour, initialMinute) =
+        AlarmTimeUtils.extractHourMinute(note.reminderDateTime)
 
+    val timeState = rememberTimePickerState(
+        initialHour,
+        initialMinute,
+        true
+    )
     ModalBottomSheet(onDismissRequest = onDismiss) {
 
         Column(Modifier.fillMaxWidth().padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally) {
 
-            Text("Alarma", style = MaterialTheme.typography.titleLarge)
+            Text(AlarmConstants.DEFAULT, style = MaterialTheme.typography.titleLarge)
 
             TimePicker(state = timeState)
 
@@ -164,7 +175,7 @@ fun AlarmBottomSheet(
                         onDismiss()
                     }
                 ) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.dialog_cancel))
                 }
 
                 Spacer(modifier = Modifier.width(8.dp))
@@ -185,15 +196,20 @@ fun AlarmBottomSheet(
                             hasReminder = true
                         )
                         viewModel.saveNoteWithAlarm(noteWithTime)
+
+                        val message = "Alarma programada en ${AlarmTimeUtils.formatTimeUntil(triggerTime)}"
+                        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+
                         onDismiss()
                     }
                 ) {
-                    Text("Guardar")
+                    Text(stringResource(R.string.dialog_save))
                 }
             }
         }
     }
 }
+
 @Composable
 fun RepeatDaysRow(
     selectedDays: List<Int>,
