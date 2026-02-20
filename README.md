@@ -10,7 +10,8 @@ Construida con **Jetpack Compose**, **Clean Architecture**, **MVVM**, **Room** y
 - ✏️ Crear notas  
 - ✍️ Editar notas existentes  
 - 🗑️ Eliminar notas  
-- 📤 Compartir notas con cualquier app  
+- 📤 Compartir notas con cualquier app
+- ⏰ Alarma / recordatorio para las notas
 - 🎨 UI moderna con Jetpack Compose  
 - 💾 Guardado local con Room  
 - 🧩 Arquitectura limpia y escalable  
@@ -42,7 +43,6 @@ Construida con **Jetpack Compose**, **Clean Architecture**, **MVVM**, **Room** y
 - [ ] Categorías / etiquetas  
 - [ ] Notas fijadas (pinned)  
 - [ ] Copia de seguridad en la nube
-- [ ] ⏰ Alarma / recordatorio para las notas
 
 ---
 
