@@ -12,6 +12,7 @@ Construida con **Jetpack Compose**, **Clean Architecture**, **MVVM**, **Room** y
 - 🗑️ Eliminar notas  
 - 📤 Compartir notas con cualquier app
 - ⏰ Alarma / recordatorio para las notas
+- 📝 Búsqueda de notas  
 - 🎨 UI moderna con Jetpack Compose  
 - 💾 Guardado local con Room  
 - 🧩 Arquitectura limpia y escalable  
@@ -33,13 +34,18 @@ Construida con **Jetpack Compose**, **Clean Architecture**, **MVVM**, **Room** y
 ---
 
 ## 📸 Capturas de pantalla
-<img src="https://github.com/user-attachments/assets/936d5b0d-2a86-4e88-957b-b8b8507a3fb5" width="300"/>  
-<img src="https://github.com/user-attachments/assets/180367a1-f4eb-4e44-bf7d-0e9b623d47e3"
+<img src="https://github.com/user-attachments/assets/c0dc2893-31e2-431c-983f-97541b3c5add"
+ width="300"/>
+<img src="https://github.com/user-attachments/assets/76ea2946-b5e3-448d-91de-3abf74eb31bc" width="300"/>
+<img src= "https://github.com/user-attachments/assets/8ee3e03e-86e2-49da-a9ba-0844ccc6407f" width="300"/>
+ <img src="https://github.com/user-attachments/assets/9d99f861-4893-45b8-9d6f-2b714587dee9"
+ width="300"/>
+ <img src="https://github.com/user-attachments/assets/fbb368f6-7ab9-4039-8b15-05e80b105b7c"
+ width="300"/>
+  <img src="https://github.com/user-attachments/assets/2bf4b421-0af3-4548-82fe-91ad1ece83dd"
  width="300"/>
 
 ## 🧪 Futuras mejoras
-
-- [ ] Búsqueda de notas  
 - [ ] Categorías / etiquetas  
 - [ ] Notas fijadas (pinned)  
 - [ ] Copia de seguridad en la nube
