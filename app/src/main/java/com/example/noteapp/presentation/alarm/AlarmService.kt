@@ -144,7 +144,7 @@ class AlarmService : Service() {
 
         val pending = PendingIntent.getBroadcast(
             this,
-            noteId, // único por nota
+            noteId, // unique per note
             Intent(this, AlarmReceiver::class.java).apply {
                 putExtra(AlarmConstants.EXTRA_NOTE_ID, noteId)
                 putExtra(AlarmConstants.EXTRA_NOTE_TITLE, alarmTitle)

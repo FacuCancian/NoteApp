@@ -1,5 +1,7 @@
 package com.example.noteapp.presentation.util.alarmUtils
 
+import com.example.noteapp.data.local.entities.Note
+import com.example.noteapp.presentation.alarm.calculateNextAlarmTime
 import java.util.Calendar
 
 object AlarmTimeUtils {
@@ -38,5 +40,18 @@ object AlarmTimeUtils {
             totalHours > 0 -> "${totalHours}h ${minutes}m"
             else -> "${minutes}m"
         }
+    }
+    fun calculateNextFromNote(note: Note): Long? {
+        val repeatDays = note.repeatDays ?: return null
+        if (repeatDays.isEmpty()) return null
+
+        val (hour, minute) =
+            extractHourMinute(note.reminderDateTime)
+
+        return calculateNextAlarmTime(
+            hour = hour,
+            minute = minute,
+            repeatDays = repeatDays
+        )
     }
 }

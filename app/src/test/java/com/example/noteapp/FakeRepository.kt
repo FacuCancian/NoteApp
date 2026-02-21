@@ -6,7 +6,7 @@ import io.mockk.core.ValueClassSupport.boxedValue
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
-class FakeRepository : NoteRepository {
+/*class FakeRepository : NoteRepository {
     private val noteList = mutableListOf<Note>()
     private val _notesFlow = MutableStateFlow<List<Note>>(emptyList())
 
@@ -41,4 +41,4 @@ class FakeRepository : NoteRepository {
     override suspend fun exportNote(note: Note) {
         TODO("Not yet implemented")
     }
-}
+}*/

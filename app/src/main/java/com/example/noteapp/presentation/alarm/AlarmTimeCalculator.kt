@@ -11,7 +11,6 @@ fun calculateNextAlarmTime(
 
     val now = nowOverride ?: Calendar.getInstance()
 
-
     // Base: today time selected
     val alarmTime = (now.clone() as Calendar).apply {
 

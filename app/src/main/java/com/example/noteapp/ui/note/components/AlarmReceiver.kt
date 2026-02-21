@@ -6,10 +6,14 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.content.ContextCompat
 import com.example.noteapp.domain.repository.NoteRepository
+import com.example.noteapp.domain.useCase.RescheduleAlarmUseCase
 import com.example.noteapp.presentation.util.alarmUtils.AlarmConstants
 import com.example.noteapp.presentation.alarm.AlarmScheduler
 import com.example.noteapp.presentation.alarm.AlarmService
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -20,6 +24,9 @@ class AlarmReceiver : BroadcastReceiver() {
 
     @Inject
     lateinit var noteRepository: NoteRepository
+
+    @Inject
+    lateinit var rescheduleAlarmUseCase: RescheduleAlarmUseCase
 
     //AlarmTime has come...
     override fun onReceive(context: Context, intent: Intent) {
@@ -41,6 +48,11 @@ class AlarmReceiver : BroadcastReceiver() {
             putExtra(AlarmConstants.EXTRA_NOTE_TITLE, title)
         }
         ContextCompat.startForegroundService(context, serviceIntent)
+        if (noteId != -1) {//for if not exists intent... -1
+            CoroutineScope(Dispatchers.IO).launch {
+                rescheduleAlarmUseCase.execute(noteId.toLong())
+            }
+        }
     }
 
 }
