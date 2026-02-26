@@ -10,15 +10,17 @@ class RescheduleAlarmUseCase @Inject constructor(
     private val scheduler: AlarmScheduler
 ) {
 
-    suspend fun execute(noteId: Long) {
+    suspend fun execute(noteId: Long): Long? {
 
-        val note = repository.getNoteById(noteId) ?: return
+        val note = repository.getNoteById(noteId) ?: return null
 
         val nextTime = AlarmTimeUtils.calculateNextFromNote(note)
-            ?: return
+            ?: return null
 
         val updated = note.copy(reminderDateTime = nextTime)
-
+        repository.insertNote(updated)
         scheduler.schedule(updated)
+
+        return nextTime
     }
 }

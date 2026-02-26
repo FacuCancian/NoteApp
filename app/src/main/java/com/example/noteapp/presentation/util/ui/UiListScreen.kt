@@ -189,9 +189,9 @@ fun AlarmBottomSheet(
                 Button(
                     onClick = {
                         val triggerTime = calculateNextAlarmTime(
-                            timeState.hour,
-                            timeState.minute,
-                            selectedDays
+                            hour = timeState.hour,
+                            minute = timeState.minute,
+                            repeatDays = selectedDays
                         )
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                             requestExactAlarmPermission(context)
@@ -204,7 +204,9 @@ fun AlarmBottomSheet(
                         viewModel.saveNoteWithAlarm(noteWithTime)
 
                         val message =
-                            "Alarma programada en ${AlarmTimeUtils.formatTimeUntil(triggerTime)}"
+                            "Alarma programada en ${
+                                AlarmTimeUtils.formatTimeUntil(triggerTime ?: System.currentTimeMillis())
+                            }"
                         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
 
                         onDismiss()

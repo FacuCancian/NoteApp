@@ -9,6 +9,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,6 +28,7 @@ import com.example.noteapp.presentation.noteList.NoteListViewModel
 
 import kotlinx.coroutines.launch
 import androidx.compose.ui.text.input.TextFieldValue
+import com.example.noteapp.presentation.login.SaveState
 import com.example.noteapp.presentation.util.ui.NewNoteDialogs
 import com.example.noteapp.presentation.util.ui.NoteEditor
 import com.example.noteapp.ui.note.components.TopBarState
@@ -45,6 +47,7 @@ fun NewNote(
     var textFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {//to follow cursor
         mutableStateOf(TextFieldValue(""))
     }
+    val saveState by viewModel.saveState.collectAsState()
 
     var showSaveDialog by remember { mutableStateOf(false) }
     var showUnsavedDialog by remember { mutableStateOf(false) }
@@ -54,6 +57,21 @@ fun NewNote(
 
     val hasChanges = textFieldValue.text.isNotBlank()
     var lastTextLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }//to follow the cursor
+    LaunchedEffect(saveState) {
+        when (saveState) {
+            is SaveState.AlreadyExists -> {
+                showSaveDialog = false
+                showOverwriteDialog = true
+                viewModel.resetSaveState()
+            }
+            is SaveState.Done -> {
+                showSaveDialog = false
+                back()
+                viewModel.resetSaveState()
+            }
+            is SaveState.Idle -> Unit
+        }
+    }
     LaunchedEffect(hasChanges) {
         setTopBar(
             TopBarState(
@@ -116,29 +134,9 @@ fun NewNote(
             onDismissUnsaved = { showUnsavedDialog = false},
             onBack = back,
             onSaveRequested = { title ->
-                viewModel.viewModelScope.launch {
-                    val exists = viewModel.doesNoteExist(title)
-                    if (exists) {
-                        noteToOverwrite = Note(
-                            id = null,
-                            content = textFieldValue.text,
-                            name = title
-                        )
-                        pendingTitle = title
-                        showSaveDialog = false
-                        showOverwriteDialog = true
-                    } else {
-                        viewModel.insertNote(
-                            Note(
-                                id = null,
-                                content = textFieldValue.text,
-                                name = title
-                            )
-                        )
-                        showSaveDialog = false
-                        back()
-                    }
-                }
+                pendingTitle = title
+                noteToOverwrite = Note(id = null, content = textFieldValue.text, name = title)
+                viewModel.trySaveNote(title, textFieldValue.text)
             },
             onOverwriteConfirmed = {
                 noteToOverwrite?.let { viewModel.insertNote(it) }

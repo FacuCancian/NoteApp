@@ -4,18 +4,22 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.noteapp.data.local.entities.Note
-import com.example.noteapp.data.repository.NoteRepositoryImpl
 import com.example.noteapp.domain.repository.NoteRepository
 import com.example.noteapp.domain.useCase.DeleteNote
 import com.example.noteapp.domain.useCase.GetAllNotes
 import com.example.noteapp.domain.useCase.GetNoteByName
 import com.example.noteapp.domain.useCase.InsertNote
 import com.example.noteapp.presentation.alarm.AlarmScheduler
+import com.example.noteapp.presentation.login.NoteListUiState
+import com.example.noteapp.presentation.login.RenameState
+import com.example.noteapp.presentation.login.SaveState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -30,45 +34,81 @@ class NoteListViewModel @Inject constructor(
     private val alarmScheduler: AlarmScheduler,
     private val repository: NoteRepository
 ) : AndroidViewModel(application) {
-
-    private val _notes = MutableStateFlow<List<Note>>(emptyList())
-    val notes: StateFlow<List<Note>> = _notes
-
-    private val _searchedNote = MutableStateFlow<Note?>(null)
-    val searchedNote: StateFlow<Note?> = _searchedNote
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
-
-    val filteredNotes: StateFlow<List<Note>> = _searchQuery
+    val uiState: StateFlow<NoteListUiState> = _searchQuery
+        //run diff paralel searchs
         .flatMapLatest { query ->
             if (query.isBlank()) {
-                getAllNotes.get() // Flow<List<Note>>
-            } else {
+                getAllNotes.get()
+            } else
                 repository.searchNotes(query)
+        }
+        //control of what came
+        .map<List<Note>, NoteListUiState> { notes ->
+            NoteListUiState.Success(notes)
+        }
+        .catch { e ->
+            emit(NoteListUiState.Error(e.message ?: "Error desconocido"))
+        }
+        //change in a StateFLow to start in loading. clod flow to StateFlow to be watch
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Lazily,
+            initialValue = NoteListUiState.Loading
+        )
+    private val _renameState = MutableStateFlow<RenameState>(RenameState.Idle)
+    val renameState: StateFlow<RenameState> = _renameState
+    fun tryRenameNote(note: Note, newName: String) {
+        viewModelScope.launch {
+            val exists = doesNoteExist(newName)
+            if (exists) {
+                _renameState.value = RenameState.NoteExists
+            } else {
+                renameNote(note, newName)
+                _renameState.value = RenameState.RenameDone
             }
         }
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    }
+
+    private val _saveState = MutableStateFlow<SaveState>(SaveState.Idle)
+    val saveState: StateFlow<SaveState> = _saveState
+    private suspend fun doesNoteExist(title: String): Boolean {
+        return search.get(title) != null
+    }
+
+    fun resetSaveState() {
+        _saveState.value = SaveState.Idle
+    }
+
+    fun resetRenameState() {
+        _renameState.value = RenameState.Idle
+    }
 
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
     }
 
-    init {
+    fun trySaveNote(title: String, content: String) {
         viewModelScope.launch {
-            getAllNotes.get().collect { noteList ->
-                _notes.value = noteList
+            val exists = doesNoteExist(title)
+            if (exists) {
+                _saveState.value = SaveState.AlreadyExists
+            } else {
+                insertNote(Note(id = null, content = content, name = title))
+                _saveState.value = SaveState.Done
             }
         }
     }
 
-    public fun renameNote(note: Note, newName: String) {
+    fun renameNote(note: Note, newName: String) {
         val updateNote = note.copy(name = newName)
         viewModelScope.launch {
             insert.invoke(updateNote)
         }
     }
 
-    public fun insertNote(note: Note) {
+    fun insertNote(note: Note) {
         viewModelScope.launch {
             insert.invoke(note)
         }
@@ -92,17 +132,6 @@ class NoteListViewModel @Inject constructor(
         }
     }
 
-    suspend fun doesNoteExist(title: String): Boolean {
-        val note = search.get(title)
-        return note != null
-    }
-
-    public fun getNoteByName(name: String) {
-        viewModelScope.launch {
-            val noteFind = search.get(name)
-            _searchedNote.value = noteFind
-        }
-    }
 
     fun cancelAlarm(note: Note) {
         alarmScheduler.cancel(note)

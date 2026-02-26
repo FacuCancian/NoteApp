@@ -1,6 +1,5 @@
 package com.example.noteapp.ui.note.screens
 
-
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -17,6 +17,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,17 +30,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.noteapp.R
 import com.example.noteapp.data.local.entities.Note
+import com.example.noteapp.presentation.login.NoteListUiState
+import com.example.noteapp.presentation.login.RenameState
 import com.example.noteapp.presentation.noteList.NoteListViewModel
 import com.example.noteapp.presentation.util.share.shareNoteAsTxt
 import com.example.noteapp.presentation.util.ui.AlarmBottomSheet
 import com.example.noteapp.presentation.util.ui.DeleteNoteDialog
 import com.example.noteapp.presentation.util.ui.NoteCardContent
 import com.example.noteapp.presentation.util.ui.saveDialog.SaveOrOverwriteDialog
-import kotlinx.coroutines.launch
-
 
 @Composable
 fun NoteList(
@@ -48,8 +48,31 @@ fun NoteList(
     onNoteClick: (Note) -> Unit,
     onButtonClick: () -> Unit
 ) {
-    val notes by noteListViewModel.filteredNotes.collectAsState()
+    //collectAsState() each state change reload the view
+    val uiState by noteListViewModel.uiState.collectAsState()
     val searchQuery by noteListViewModel.searchQuery.collectAsState()
+    val renameState by noteListViewModel.renameState.collectAsState()
+
+    // local state not for item
+    var noteBeingRenamed by remember { mutableStateOf<Note?>(null) }
+    var showChangeNameDialog by remember { mutableStateOf(false) }
+    var showOverwriteDialog by remember { mutableStateOf(false) }
+    var editedTitle by remember { mutableStateOf("") }
+
+    LaunchedEffect(renameState) {
+        when (renameState) {
+            is RenameState.NoteExists -> {
+                showChangeNameDialog = false
+                showOverwriteDialog = true
+                noteListViewModel.resetRenameState()
+            }
+            is RenameState.RenameDone -> {
+                showChangeNameDialog = false
+                noteListViewModel.resetRenameState()
+            }
+            is RenameState.Idle -> Unit
+        }
+    }
 
     Scaffold(
         floatingActionButton = {
@@ -71,18 +94,58 @@ fun NoteList(
                 onQueryChange = { noteListViewModel.updateSearchQuery(it) }
             )
             Spacer(modifier = Modifier.height(4.dp))
-            //filtered notes
-            LazyColumn(
-                Modifier
-                    .fillMaxSize()
-                    .padding(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(notes) { note ->
-                    NoteItemList(
-                        note = note,
-                        onCardClick = { onNoteClick(note) },
-                        onDelete = { noteListViewModel.deleteNote(it) }
+            when (uiState) {
+                is NoteListUiState.Loading -> {
+                    CircularProgressIndicator()
+                }
+
+                is NoteListUiState.Success -> {
+                    val notes = (uiState as NoteListUiState.Success).notes
+                    LazyColumn(
+                        Modifier
+                            .fillMaxSize()
+                            .padding(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(notes) { note ->
+                            NoteItemList(
+                                note = note,
+                                onCardClick = { onNoteClick(note) },
+                                onDelete = { noteListViewModel.deleteNote(it) },
+                                onLongClick = {
+                                    noteBeingRenamed = note
+                                    editedTitle = note.name
+                                    showChangeNameDialog = true
+                                }
+                            )
+                        }
+                    }
+                }
+
+                is NoteListUiState.Error -> {
+                    val message = (uiState as NoteListUiState.Error).message
+                    Text(text = message, color = Color.Red)
+                }
+            }
+            if (showChangeNameDialog || showOverwriteDialog) {
+                noteBeingRenamed?.let { note ->
+                    SaveOrOverwriteDialog(
+                        showSaveDialog = showChangeNameDialog,
+                        showOverwriteDialog = showOverwriteDialog,
+                        pendingTitle = editedTitle,
+                        onDismissSave = { showChangeNameDialog = false },
+                        onDismissOverwrite = {
+                            showOverwriteDialog = false
+                            showChangeNameDialog = false
+                        },
+                        onSaveRequested = { newName ->
+                            editedTitle = newName
+                            noteListViewModel.tryRenameNote(note, newName)
+                        },
+                        onOverwriteConfirmed = {
+                            noteListViewModel.renameNote(note, editedTitle)
+                            showOverwriteDialog = false
+                        }
                     )
                 }
             }
@@ -95,27 +158,21 @@ fun NoteItemList(
     note: Note,
     onCardClick: (Note) -> Unit,
     onDelete: (Note) -> Unit,
+    onLongClick: () -> Unit,
     viewModel: NoteListViewModel = hiltViewModel()
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showAlarmSheet by remember { mutableStateOf(false) }
-    var showChangeNameDialog by remember { mutableStateOf(false) }
-    var showOverwriteDialog by remember { mutableStateOf(false) }
 
-    var editedTitle by remember(note.id) { mutableStateOf(note.name) }
     val context = LocalContext.current
     NoteCardContent(
         note = note,
         onClick = { onCardClick(note) },
-        onLongClick = {
-            editedTitle = note.name
-            showChangeNameDialog = true
-        },
+        onLongClick = onLongClick,
         onDeleteClick = { showDeleteDialog = true },
         onAlarmClick = { showAlarmSheet = true },
-        onShareClick = { shareNoteAsTxt(context, note) },
-
-        )
+        onShareClick = { shareNoteAsTxt(context, note) }
+    )
 
     if (showDeleteDialog) {
         DeleteNoteDialog(
@@ -134,39 +191,8 @@ fun NoteItemList(
             onDismiss = { showAlarmSheet = false }
         )
     }
-
-
-    if (showChangeNameDialog || showOverwriteDialog) {
-        SaveOrOverwriteDialog(
-            showSaveDialog = showChangeNameDialog,
-            showOverwriteDialog = showOverwriteDialog,
-            pendingTitle = editedTitle,
-            onDismissSave = { showChangeNameDialog = false },
-            onDismissOverwrite = {
-                showOverwriteDialog = false
-                showChangeNameDialog = false
-            },
-            onSaveRequested = { newName ->
-                viewModel.viewModelScope.launch {
-                    val exists = viewModel.doesNoteExist(newName)
-                    if (exists) {
-                        editedTitle = newName
-                        showChangeNameDialog = false
-                        showOverwriteDialog = true
-                    } else {
-                        viewModel.renameNote(note, newName)
-                        showChangeNameDialog = false
-                    }
-                }
-            },
-            onOverwriteConfirmed = {
-                viewModel.renameNote(note, editedTitle)
-                showOverwriteDialog = false
-            }
-        )
-    }
-
 }
+
 @Composable
 fun NoteSearchField(
     query: String,

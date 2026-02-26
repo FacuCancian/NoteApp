@@ -30,6 +30,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.noteapp.R
+import com.example.noteapp.presentation.login.NoteListUiState
 import com.example.noteapp.presentation.noteList.NoteListViewModel
 import com.example.noteapp.ui.note.NoteScreen
 import com.example.noteapp.ui.note.components.TopBarState
@@ -97,10 +98,12 @@ fun NoteApp(
                 val noteId = backStackEntry.arguments?.getInt("noteId")
                     ?: return@composable//recover argument or dont go to composable
                 val viewModel: NoteListViewModel = hiltViewModel()
-                val notes by viewModel.notes.collectAsState()
+                val uiState by viewModel.uiState.collectAsState()
 
-                // find note to show on screen
-                val note = notes.firstOrNull { it.id == noteId }
+                val note = when (uiState) {
+                    is NoteListUiState.Success -> (uiState as NoteListUiState.Success).notes.firstOrNull { it.id == noteId }
+                    else -> null
+                }
                 note?.let {
                     NoteInfo(
                         note = it,
