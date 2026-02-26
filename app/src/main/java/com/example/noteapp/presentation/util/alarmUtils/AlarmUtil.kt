@@ -6,7 +6,7 @@ import java.util.Calendar
 
 object AlarmTimeUtils {
 
-    fun extractHourMinute(timestamp: Long?): Pair<Int, Int> {
+    fun extractHourMinute(timestamp: Long?): Pair<Int, Int> {//time alarm ring
         if (timestamp == null) return 12 to 0
 
         val calendar = Calendar.getInstance().apply {
@@ -51,7 +51,7 @@ object AlarmTimeUtils {
         return calculateNextAlarmTime(
             hour = hour,
             minute = minute,
-            repeatDays = repeatDays
+            repeatDays = repeatDays,
         )
     }
 }

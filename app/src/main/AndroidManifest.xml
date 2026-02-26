@@ -35,11 +35,8 @@
             android:name=".ui.note.components.AlarmActivity"
             android:excludeFromRecents="true"
             android:exported="true"
-            android:launchMode="singleTask"
-            android:screenOrientation="portrait"
-            android:showWhenLocked="true"
-            android:turnScreenOn="true"></activity>
-
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait" />
         <service
             android:name=".presentation.alarm.AlarmService"
             android:exported="false"

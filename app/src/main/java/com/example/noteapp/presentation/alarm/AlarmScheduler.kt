@@ -10,11 +10,11 @@ import android.app.AlarmManager
 import com.example.noteapp.presentation.util.alarmUtils.AlarmConstants
 import javax.inject.Inject
 
-class AlarmScheduler @Inject constructor(private val context: Context) {
+open class AlarmScheduler @Inject constructor(private val context: Context) {
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
     @SuppressLint("ScheduleExactAlarm")
-    fun schedule(note: Note) {
+    open fun schedule(note: Note) {
         if (note.reminderDateTime == null || note.id == null) return
 
         val intent = Intent(context, AlarmReceiver::class.java).apply {
@@ -37,7 +37,7 @@ class AlarmScheduler @Inject constructor(private val context: Context) {
         )
     }
 
-    fun cancel(note: Note) {
+    open fun cancel(note: Note) {
         val intent = Intent(context, AlarmReceiver::class.java)
 
         val pendingIntent = PendingIntent.getBroadcast(

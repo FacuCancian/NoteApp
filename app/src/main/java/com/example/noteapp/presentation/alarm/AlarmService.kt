@@ -15,9 +15,22 @@ import androidx.core.app.NotificationCompat
 import android.app.PendingIntent
 import com.example.noteapp.ui.note.components.AlarmReceiver
 import android.provider.Settings
+import android.widget.Toast
+import com.example.noteapp.domain.useCase.RescheduleAlarmUseCase
 import com.example.noteapp.presentation.util.alarmUtils.AlarmConstants
+import com.example.noteapp.presentation.util.alarmUtils.AlarmTimeUtils
+import com.example.noteapp.ui.note.components.AlarmActivity
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class AlarmService : Service() {
+    @Inject
+    lateinit var rescheduleAlarmUseCase: RescheduleAlarmUseCase
 
     companion object {
         const val ACTION_STOP = "STOP_ALARM"
@@ -31,7 +44,6 @@ class AlarmService : Service() {
 
     private var ringtone: Ringtone? = null
     private var alarmTitle: String = AlarmConstants.DEFAULT
-    //next here, no coection, go to startForegroundAlarm()
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val noteId =
@@ -39,10 +51,29 @@ class AlarmService : Service() {
         alarmTitle =
             intent?.getStringExtra(AlarmConstants.EXTRA_NOTE_TITLE) ?: AlarmConstants.DEFAULT
 
-
         when (intent?.action) {
             ACTION_STOP -> {
-                stopAlarm()
+                val noteId = intent.getIntExtra(AlarmConstants.EXTRA_NOTE_ID, -1)
+                CoroutineScope(Dispatchers.IO).launch {
+                    if (noteId != -1) {
+                        val nextTime = rescheduleAlarmUseCase.execute(noteId.toLong())
+                        nextTime?.let {
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    this@AlarmService,
+                                    "Próxima alarma: ${AlarmTimeUtils.formatTimeUntil(it)}",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
+                    }
+
+                    // 👇 ahora sí paramos la alarma
+                    withContext(Dispatchers.Main) {
+                        stopAlarm()
+                    }
+                }
+
                 return START_NOT_STICKY
             }
 
@@ -54,7 +85,6 @@ class AlarmService : Service() {
 
             else -> startForegroundAlarm(intent)
         }
-
         return START_STICKY
     }
 
@@ -70,44 +100,61 @@ class AlarmService : Service() {
         val stopIntent = Intent(this, AlarmService::class.java).apply {
             putExtra(AlarmConstants.EXTRA_NOTE_ID, noteId)
             putExtra(AlarmConstants.EXTRA_NOTE_TITLE, alarmTitle)
-            action  = ACTION_STOP
+            action = ACTION_STOP
         }
 
         val snoozeIntent = Intent(this, AlarmService::class.java).apply {
             putExtra(AlarmConstants.EXTRA_NOTE_ID, noteId)
             putExtra(AlarmConstants.EXTRA_NOTE_TITLE, alarmTitle)
-            action  = ACTION_SNOOZE
+            action = ACTION_SNOOZE
         }
 
 
-        val stopPending =
-            PendingIntent.getService(
-                this,
-                stopRequestCode,
-                stopIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-        val snoozePending =
-            PendingIntent.getService(
-                this,
-                snoozeRequestCode,
-                snoozeIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
+        PendingIntent.getService(
+            this,
+            stopRequestCode,
+            stopIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        PendingIntent.getService(
+            this,
+            snoozeRequestCode,
+            snoozeIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
 
+        val activityIntent = Intent(this, AlarmActivity::class.java).apply {
+            putExtra(AlarmConstants.EXTRA_NOTE_ID, noteId)
+            putExtra(AlarmConstants.EXTRA_NOTE_TITLE, alarmTitle)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
+
+        PendingIntent.getActivity(
+            this,
+            noteId,
+            activityIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val activityPending = PendingIntent.getActivity(
+            this,
+            noteId,
+            activityIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_lock_idle_alarm)
             .setContentTitle(alarmTitle)
-            .setContentText(AlarmConstants.SOUND)
+            .setContentText("Sonando...")
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(activityPending) // 👈 ESTA ES LA CLAVE
             .setOngoing(true)
-            .addAction(R.drawable.ic_media_pause, AlarmConstants.STOPALARM, stopPending)
-            .addAction(R.drawable.ic_media_pause, AlarmConstants.POS, snoozePending)
             .build()
 
         startForeground(NOTIFICATION_ID, notification)
-
+        startActivity(activityIntent)
         if (ringtone == null) {
             val uri = Settings.System.DEFAULT_ALARM_ALERT_URI
             ringtone = RingtoneManager.getRingtone(this, uri)
@@ -122,7 +169,6 @@ class AlarmService : Service() {
 
         stopSelf()
     }
-
 
     private fun createChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
