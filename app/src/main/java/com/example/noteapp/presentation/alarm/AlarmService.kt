@@ -13,6 +13,8 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import android.app.PendingIntent
+import android.os.VibrationEffect
+import android.os.Vibrator
 import com.example.noteapp.ui.note.components.AlarmReceiver
 import android.provider.Settings
 import android.widget.Toast
@@ -41,7 +43,7 @@ class AlarmService : Service() {
         var isRunning = false
 
     }
-
+    private var vibrator: Vibrator? = null
     private var ringtone: Ringtone? = null
     private var alarmTitle: String = AlarmConstants.DEFAULT
 
@@ -160,13 +162,28 @@ class AlarmService : Service() {
             ringtone = RingtoneManager.getRingtone(this, uri)
             ringtone?.play()
         }
+
+// 🔥 VIBRACIÓN SIEMPRE ACTIVA
+        vibrator = getSystemService(VIBRATOR_SERVICE) as Vibrator
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val pattern = longArrayOf(0, 500, 500)
+            vibrator?.vibrate(
+                VibrationEffect.createWaveform(pattern, 0) // 0 = loop infinito
+            )
+        } else {
+            vibrator?.vibrate(longArrayOf(0, 500, 500), 0)
+        }
     }
 
     private fun stopAlarm() {
         ringtone?.stop()
         ringtone = null
-        isRunning = false
 
+        vibrator?.cancel()
+        vibrator = null
+
+        isRunning = false
         stopSelf()
     }
 

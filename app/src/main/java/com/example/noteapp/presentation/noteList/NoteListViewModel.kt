@@ -38,11 +38,13 @@ class NoteListViewModel @Inject constructor(
     val searchQuery: StateFlow<String> = _searchQuery
     val uiState: StateFlow<NoteListUiState> = _searchQuery
         //run diff paralel searchs
-        .flatMapLatest { query ->
-            if (query.isBlank()) {
+        .flatMapLatest { rawQuery ->
+            val normalizedQuery = rawQuery.trim()
+            if (normalizedQuery.isBlank()) {
                 getAllNotes.get()
-            } else
-                repository.searchNotes(query)
+            } else {
+                repository.searchNotes(normalizedQuery)
+            }
         }
         //control of what came
         .map<List<Note>, NoteListUiState> { notes ->
