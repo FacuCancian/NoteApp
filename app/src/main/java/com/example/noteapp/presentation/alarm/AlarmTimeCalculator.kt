@@ -6,6 +6,7 @@ fun calculateNextAlarmTime(
     hour: Int,
     minute: Int,
     repeatDays: List<Int>? = null,
+    repeatForever: Boolean = false,
     nowOverride: Calendar? = null
 ): Long? {
     //day time

@@ -27,6 +27,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -140,7 +141,7 @@ fun AlarmBottomSheet(
     val context = LocalContext.current
 
     var selectedDays by remember { mutableStateOf(note.repeatDays ?: emptyList()) }
-
+    var repeatForever by remember { mutableStateOf(note.repeatForever) }
     val (initialHour, initialMinute) =
         AlarmTimeUtils.extractHourMinute(note.reminderDateTime)
 
@@ -153,7 +154,19 @@ fun AlarmBottomSheet(
         skipPartiallyExpanded = true
     )
     ModalBottomSheet(onDismissRequest = onDismiss,sheetState = sheetState) {
-
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(stringResource(R.string.switch_text))
+            Switch(
+                checked = repeatForever,
+                onCheckedChange = { repeatForever = it }
+            )
+        }
         Column(
             Modifier.fillMaxWidth().padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -199,7 +212,8 @@ fun AlarmBottomSheet(
                         val noteWithTime = note.copy(
                             reminderDateTime = triggerTime,
                             repeatDays = selectedDays.ifEmpty { null },
-                            hasReminder = true
+                            hasReminder = true,
+                            repeatForever = repeatForever
                         )
                         viewModel.saveNoteWithAlarm(noteWithTime)
 

@@ -29,8 +29,13 @@ object AppModule {
     @Provides
     @Singleton
     fun provideNoteDataBase(@ApplicationContext context: Context): NoteDataBase {
-        return Room.databaseBuilder(context, NoteDataBase::class.java, "note_database").build()
-    }
+        return Room.databaseBuilder(context, NoteDataBase::class.java, "note_database")
+            .addMigrations(
+                NoteDataBase.MIGRATION_1_2,
+                NoteDataBase.MIGRATION_2_3,
+                NoteDataBase.MIGRATION_3_4
+            )
+            .build()    }
 
     @Provides
     fun provideNoteDao(dataBase: NoteDataBase): NoteDao {

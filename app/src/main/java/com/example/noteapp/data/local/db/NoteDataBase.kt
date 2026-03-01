@@ -14,7 +14,7 @@ import com.example.noteapp.data.local.converter.NoteAppConverter
 
 @Database(
     entities = [Note::class],
-    version = 3,
+    version = 4, // ← de 3 a 4
     exportSchema = false,
 )
 @TypeConverters(NoteAppConverter::class)
@@ -34,7 +34,7 @@ abstract class NoteDataBase : RoomDatabase() {
                     NoteDataBase::class.java,
                     "note_database"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4) // ← agregás la nueva
                     .build()
 
                 INSTANCE = instance
@@ -71,6 +71,13 @@ abstract class NoteDataBase : RoomDatabase() {
                 database.execSQL("ALTER TABLE Notes ADD COLUMN reminderDateTime INTEGER")
                 database.execSQL("ALTER TABLE Notes ADD COLUMN repeatDays TEXT")
                 database.execSQL("ALTER TABLE Notes ADD COLUMN hasReminder INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "ALTER TABLE Notes ADD COLUMN repeatForever INTEGER NOT NULL DEFAULT 0"
+                )
             }
         }
     }

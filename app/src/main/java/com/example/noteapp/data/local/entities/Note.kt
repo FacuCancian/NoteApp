@@ -17,6 +17,6 @@ data class Note(
     val name: String,
     val reminderDateTime: Long? = null,
     val repeatDays: List<Int>? = null,
-    val hasReminder: Boolean = false
-
+    val hasReminder: Boolean = false,
+    val repeatForever: Boolean = false
 )

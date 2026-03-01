@@ -47,4 +47,6 @@
     <string name="stop_alarm">Apagar Alarma</string>
     <string name="pos_alarm">Posponer</string>
 
+    <string name="switch_text">Repetir:</string>
+
 </resources>

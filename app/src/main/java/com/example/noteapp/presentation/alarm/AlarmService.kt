@@ -25,9 +25,13 @@ import com.example.noteapp.ui.note.components.AlarmActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 
 @AndroidEntryPoint
 class AlarmService : Service() {
@@ -43,22 +47,65 @@ class AlarmService : Service() {
         var isRunning = false
 
     }
+
     private var vibrator: Vibrator? = null
     private var ringtone: Ringtone? = null
     private var alarmTitle: String = AlarmConstants.DEFAULT
+    private var userInteracted = false
+    private var currentNoteId: Int = -1
+    private var autoStopJob: Job? = null
+
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
+    override fun onDestroy() {
+        super.onDestroy()
+        serviceScope.cancel()
+    }
+
+    private suspend fun handleMissedAlarm() {
+        if (currentNoteId == -1) return
+
+        val nextTime = withContext(Dispatchers.IO) {
+            rescheduleAlarmUseCase.execute(currentNoteId.toLong())
+        }
+
+        if (nextTime != null) {
+            val formattedDate = java.text.SimpleDateFormat(
+                "dd/MM/yyyy HH:mm",
+                java.util.Locale.getDefault()
+            ).format(java.util.Date(nextTime))
+
+            Toast.makeText(
+                this,
+                "Reprogramada para: $formattedDate",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+
+        val notificationManager =
+            getSystemService(NotificationManager::class.java)
+
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+            .setContentTitle("Alarma perdida")
+            .setContentText("$alarmTitle - no la escuchaste")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .build()
+
+        notificationManager.notify(currentNoteId + 2000, notification)
+    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val noteId =
-            intent?.getIntExtra(AlarmConstants.EXTRA_NOTE_ID, -1) ?: return START_NOT_STICKY
+        currentNoteId = intent?.getIntExtra(AlarmConstants.EXTRA_NOTE_ID, -1) ?: -1
         alarmTitle =
             intent?.getStringExtra(AlarmConstants.EXTRA_NOTE_TITLE) ?: AlarmConstants.DEFAULT
 
         when (intent?.action) {
             ACTION_STOP -> {
-                val noteId = intent.getIntExtra(AlarmConstants.EXTRA_NOTE_ID, -1)
                 CoroutineScope(Dispatchers.IO).launch {
-                    if (noteId != -1) {
-                        val nextTime = rescheduleAlarmUseCase.execute(noteId.toLong())
+                    if (currentNoteId != -1) {
+                        val nextTime = rescheduleAlarmUseCase.execute(currentNoteId.toLong())
                         nextTime?.let {
                             withContext(Dispatchers.Main) {
                                 Toast.makeText(
@@ -70,7 +117,7 @@ class AlarmService : Service() {
                         }
                     }
 
-                    // 👇 ahora sí paramos la alarma
+                    userInteracted = true
                     withContext(Dispatchers.Main) {
                         stopAlarm()
                     }
@@ -82,19 +129,33 @@ class AlarmService : Service() {
             ACTION_SNOOZE -> {
                 snoozeAlarm(intent)
                 stopAlarm()
+                userInteracted = true
                 return START_NOT_STICKY
             }
 
             else -> startForegroundAlarm(intent)
         }
-        return START_STICKY
+        return START_NOT_STICKY
     }
 
     private fun startForegroundAlarm(intent: Intent?) {
         isRunning = true
+        userInteracted = false
         createChannel()
         val noteId = intent?.getIntExtra(AlarmConstants.EXTRA_NOTE_ID, -1) ?: return
+        autoStopJob?.cancel()
 
+        autoStopJob = serviceScope.launch {
+            delay(60_000)
+
+            if (!userInteracted) {
+                userInteracted = true
+
+                handleMissedAlarm()
+
+                stopAlarm()
+            }
+        }
         // Stop y Snooze for requestCode unique per note
         val stopRequestCode = (noteId * 10 + 0)
         val snoozeRequestCode = (noteId * 10 + 1)
@@ -110,7 +171,6 @@ class AlarmService : Service() {
             putExtra(AlarmConstants.EXTRA_NOTE_TITLE, alarmTitle)
             action = ACTION_SNOOZE
         }
-
 
         PendingIntent.getService(
             this,
@@ -151,7 +211,7 @@ class AlarmService : Service() {
             .setContentText("Sonando...")
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setContentIntent(activityPending) // 👈 ESTA ES LA CLAVE
+            .setContentIntent(activityPending)
             .setOngoing(true)
             .build()
 
@@ -163,7 +223,7 @@ class AlarmService : Service() {
             ringtone?.play()
         }
 
-// 🔥 VIBRACIÓN SIEMPRE ACTIVA
+
         vibrator = getSystemService(VIBRATOR_SERVICE) as Vibrator
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -177,6 +237,9 @@ class AlarmService : Service() {
     }
 
     private fun stopAlarm() {
+        autoStopJob?.cancel()
+        autoStopJob = null
+
         ringtone?.stop()
         ringtone = null
 
@@ -203,7 +266,7 @@ class AlarmService : Service() {
         val noteId = intent.getIntExtra(AlarmConstants.EXTRA_NOTE_ID, -1)
         if (noteId == -1) return
 
-        val newTime = System.currentTimeMillis() + 10 * 60_000 // 10 min
+        val newTime = System.currentTimeMillis() + 10 * 60_000
 
         val pending = PendingIntent.getBroadcast(
             this,
