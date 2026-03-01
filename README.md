@@ -45,13 +45,6 @@ Construida con **Jetpack Compose**, **Clean Architecture**, **MVVM**, **Room** y
   <img src="https://github.com/user-attachments/assets/2bf4b421-0af3-4548-82fe-91ad1ece83dd"
  width="300"/>
 
-## 🧪 Futuras mejoras
-- [ ] Categorías / etiquetas  
-- [ ] Notas fijadas (pinned)  
-- [ ] Copia de seguridad en la nube
-
----
-
 ## 👨‍💻 Autor
 
 **Facu Cancian**  
