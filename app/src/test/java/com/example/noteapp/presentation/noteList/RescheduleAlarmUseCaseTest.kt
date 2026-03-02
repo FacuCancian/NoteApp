@@ -38,7 +38,7 @@ class RescheduleAlarmUseCaseTest {
     )
 
     @Test
-    fun `repeat just once a day, not a week`() = runTest {
+    fun `repeat just once a day not a week`() = runTest {
 // Arrange
         coEvery { repository.getNoteById(1) } returns testNote
         coEvery { repository.insertNote(any()) } returns 1L  // necesario porque insertNote es suspend

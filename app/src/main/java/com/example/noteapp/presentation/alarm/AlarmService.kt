@@ -97,6 +97,10 @@ class AlarmService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent == null) {
+            stopSelf()
+            return START_NOT_STICKY
+        }
         currentNoteId = intent?.getIntExtra(AlarmConstants.EXTRA_NOTE_ID, -1) ?: -1
         alarmTitle =
             intent?.getStringExtra(AlarmConstants.EXTRA_NOTE_TITLE) ?: AlarmConstants.DEFAULT
@@ -135,7 +139,7 @@ class AlarmService : Service() {
 
             else -> startForegroundAlarm(intent)
         }
-        return START_NOT_STICKY
+        return START_STICKY
     }
 
     private fun startForegroundAlarm(intent: Intent?) {
@@ -146,7 +150,7 @@ class AlarmService : Service() {
         autoStopJob?.cancel()
 
         autoStopJob = serviceScope.launch {
-            delay(60_000)
+            delay(180_000)
 
             if (!userInteracted) {
                 userInteracted = true
