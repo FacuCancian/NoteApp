@@ -1,12 +1,12 @@
 package com.example.noteapp.presentation.alarm
 
+import com.example.noteapp.presentation.util.alarmUtils.AlarmTimeUtils
 import java.util.Calendar
 
 fun calculateNextAlarmTime(
     hour: Int,
     minute: Int,
     repeatDays: List<Int>? = null,
-    repeatForever: Boolean = false,
     nowOverride: Calendar? = null
 ): Long? {
     //day time
@@ -26,20 +26,10 @@ fun calculateNextAlarmTime(
         return alarmTime.timeInMillis
     }
 
-    // Map repeatDays (1=Lunes ... 7=Domingo) -> Calendar.DAY_OF_WEEK (1=Domingo ... 7=Sábado)
-    val dayMap = mapOf(
-        1 to Calendar.MONDAY,
-        2 to Calendar.TUESDAY,
-        3 to Calendar.WEDNESDAY,
-        4 to Calendar.THURSDAY,
-        5 to Calendar.FRIDAY,
-        6 to Calendar.SATURDAY,
-        7 to Calendar.SUNDAY
-    )
-    val repeatCalendarDays = repeatDays.map { dayMap[it] ?: it }
+
+    val repeatCalendarDays = repeatDays.map { AlarmTimeUtils.dayMap[it] ?: it }
 
     for (i in 0..6) {
-        //first valid day, today...
         val candidate = (alarmTime.clone() as Calendar).apply { add(Calendar.DAY_OF_MONTH, i) }
         val day = candidate.get(Calendar.DAY_OF_WEEK)
         if (day in repeatCalendarDays) {

@@ -5,6 +5,16 @@ import com.example.noteapp.presentation.alarm.calculateNextAlarmTime
 import java.util.Calendar
 
 object AlarmTimeUtils {
+    val dayMap = mapOf(
+        1 to Calendar.MONDAY,
+        2 to Calendar.TUESDAY,
+        3 to Calendar.WEDNESDAY,
+        4 to Calendar.THURSDAY,
+        5 to Calendar.FRIDAY,
+        6 to Calendar.SATURDAY,
+        7 to Calendar.SUNDAY
+    )
+    val reverseDayMap = dayMap.entries.associate { (k, v) -> v to k }
 
     fun extractHourMinute(timestamp: Long?): Pair<Int, Int> {//time alarm ring
         if (timestamp == null) return 12 to 0
@@ -43,6 +53,7 @@ object AlarmTimeUtils {
     }
     fun calculateNextFromNote(note: Note): Long? {
         val repeatDays = note.repeatDays ?: return null
+
         if (repeatDays.isEmpty()) return null
 
         val (hour, minute) =

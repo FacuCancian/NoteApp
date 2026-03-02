@@ -3,6 +3,7 @@ package com.example.noteapp.domain.useCase
 import com.example.noteapp.domain.repository.NoteRepository
 import com.example.noteapp.presentation.alarm.AlarmScheduler
 import com.example.noteapp.presentation.util.alarmUtils.AlarmTimeUtils
+import java.util.Calendar
 import javax.inject.Inject
 
 class RescheduleAlarmUseCase @Inject constructor(
@@ -25,8 +26,8 @@ class RescheduleAlarmUseCase @Inject constructor(
             return null
         }
 
-        val today = java.util.Calendar.getInstance()
-            .get(java.util.Calendar.DAY_OF_WEEK)
+        val todayCalendar = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
+        val today = AlarmTimeUtils.reverseDayMap[todayCalendar] ?: return null
 
         val updatedDays = if (!note.repeatForever) {
             days.apply { remove(today) }
