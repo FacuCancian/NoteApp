@@ -1,4 +1,4 @@
-package com.example.noteapp.presentation.alarm
+package com.example.noteapp.domain.data.alarm
 
 import android.R
 import android.annotation.SuppressLint
@@ -15,13 +15,13 @@ import androidx.core.app.NotificationCompat
 import android.app.PendingIntent
 import android.os.VibrationEffect
 import android.os.Vibrator
-import com.example.noteapp.ui.note.components.AlarmReceiver
+import com.example.noteapp.presentation.util.ui.note.components.AlarmReceiver
 import android.provider.Settings
 import android.widget.Toast
 import com.example.noteapp.domain.useCase.RescheduleAlarmUseCase
 import com.example.noteapp.presentation.util.alarmUtils.AlarmConstants
 import com.example.noteapp.presentation.util.alarmUtils.AlarmTimeUtils
-import com.example.noteapp.ui.note.components.AlarmActivity
+import com.example.noteapp.presentation.util.ui.note.components.AlarmActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,6 +32,9 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @AndroidEntryPoint
 class AlarmService : Service() {
@@ -70,10 +73,10 @@ class AlarmService : Service() {
         }
 
         if (nextTime != null) {
-            val formattedDate = java.text.SimpleDateFormat(
+            val formattedDate = SimpleDateFormat(
                 "dd/MM/yyyy HH:mm",
-                java.util.Locale.getDefault()
-            ).format(java.util.Date(nextTime))
+                Locale.getDefault()
+            ).format(Date(nextTime))
 
             Toast.makeText(
                 this,
@@ -86,7 +89,7 @@ class AlarmService : Service() {
             getSystemService(NotificationManager::class.java)
 
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+            .setSmallIcon(R.drawable.ic_lock_idle_alarm)
             .setContentTitle("Alarma perdida")
             .setContentText("$alarmTitle - no la escuchaste")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -192,7 +195,7 @@ class AlarmService : Service() {
         val activityIntent = Intent(this, AlarmActivity::class.java).apply {
             putExtra(AlarmConstants.EXTRA_NOTE_ID, noteId)
             putExtra(AlarmConstants.EXTRA_NOTE_TITLE, alarmTitle)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+           flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_CLEAR_TOP or
                     Intent.FLAG_ACTIVITY_SINGLE_TOP
         }

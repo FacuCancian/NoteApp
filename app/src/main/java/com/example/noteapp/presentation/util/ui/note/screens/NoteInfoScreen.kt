@@ -1,4 +1,4 @@
-package com.example.noteapp.ui.note.screens
+package com.example.noteapp.presentation.util.ui.note.screens
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
@@ -17,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.dp
 import com.example.noteapp.data.local.entities.Note
-import com.example.noteapp.ui.note.components.TopBarState
+import com.example.noteapp.presentation.util.ui.note.components.TopBarState
 
 import androidx.compose.ui.text.input.TextFieldValue
 import com.example.noteapp.presentation.util.ui.NoteInfoDialogs

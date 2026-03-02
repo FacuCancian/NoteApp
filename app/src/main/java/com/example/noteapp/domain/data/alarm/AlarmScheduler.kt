@@ -1,11 +1,11 @@
-package com.example.noteapp.presentation.alarm
+package com.example.noteapp.domain.data.alarm
 
 import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import com.example.noteapp.data.local.entities.Note
-import com.example.noteapp.ui.note.components.AlarmReceiver
+import com.example.noteapp.presentation.util.ui.note.components.AlarmReceiver
 import android.app.AlarmManager
 import com.example.noteapp.presentation.util.alarmUtils.AlarmConstants
 import javax.inject.Inject

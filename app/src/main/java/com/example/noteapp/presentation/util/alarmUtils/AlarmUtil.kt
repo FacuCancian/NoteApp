@@ -1,7 +1,7 @@
 package com.example.noteapp.presentation.util.alarmUtils
 
 import com.example.noteapp.data.local.entities.Note
-import com.example.noteapp.presentation.alarm.calculateNextAlarmTime
+import com.example.noteapp.domain.data.alarm.calculateNextAlarmTime
 import java.util.Calendar
 
 object AlarmTimeUtils {

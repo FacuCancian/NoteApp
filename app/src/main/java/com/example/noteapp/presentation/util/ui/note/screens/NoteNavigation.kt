@@ -1,8 +1,5 @@
-package com.example.noteapp.ui.note.screens
+package com.example.noteapp.presentation.util.ui.note.screens
 
-import android.annotation.SuppressLint
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -32,8 +29,8 @@ import androidx.navigation.navArgument
 import com.example.noteapp.R
 import com.example.noteapp.presentation.login.NoteListUiState
 import com.example.noteapp.presentation.noteList.NoteListViewModel
-import com.example.noteapp.ui.note.NoteScreen
-import com.example.noteapp.ui.note.components.TopBarState
+import com.example.noteapp.presentation.util.ui.note.NoteScreen
+import com.example.noteapp.presentation.util.ui.note.components.TopBarState
 
 
 @OptIn(ExperimentalMaterial3Api::class)

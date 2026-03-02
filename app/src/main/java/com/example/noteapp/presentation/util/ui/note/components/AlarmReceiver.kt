@@ -1,4 +1,4 @@
-package com.example.noteapp.ui.note.components
+package com.example.noteapp.presentation.util.ui.note.components
 
 
 import android.content.BroadcastReceiver
@@ -7,7 +7,7 @@ import android.content.Intent
 
 import androidx.core.content.ContextCompat
 
-import com.example.noteapp.presentation.alarm.AlarmService
+import com.example.noteapp.domain.data.alarm.AlarmService
 import com.example.noteapp.presentation.util.alarmUtils.AlarmConstants
 import dagger.hilt.android.AndroidEntryPoint
 

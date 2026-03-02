@@ -1,4 +1,4 @@
-package com.example.noteapp.ui.note.screens
+package com.example.noteapp.presentation.util.ui.note.screens
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
@@ -22,16 +22,14 @@ import androidx.compose.ui.text.TextLayoutResult
 
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.noteapp.data.local.entities.Note
 import com.example.noteapp.presentation.noteList.NoteListViewModel
 
-import kotlinx.coroutines.launch
 import androidx.compose.ui.text.input.TextFieldValue
 import com.example.noteapp.presentation.login.SaveState
 import com.example.noteapp.presentation.util.ui.NewNoteDialogs
 import com.example.noteapp.presentation.util.ui.NoteEditor
-import com.example.noteapp.ui.note.components.TopBarState
+import com.example.noteapp.presentation.util.ui.note.components.TopBarState
 import kotlinx.coroutines.delay
 
 

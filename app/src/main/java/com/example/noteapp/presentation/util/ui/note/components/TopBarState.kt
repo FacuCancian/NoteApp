@@ -1,4 +1,4 @@
-package com.example.noteapp.ui.note.components
+package com.example.noteapp.presentation.util.ui.note.components
 
 data class TopBarState(
     val title: String = "",

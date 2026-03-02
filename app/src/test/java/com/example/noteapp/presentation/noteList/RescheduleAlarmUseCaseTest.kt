@@ -3,7 +3,7 @@ package com.example.noteapp.presentation.noteList
 import com.example.noteapp.data.local.entities.Note
 import com.example.noteapp.domain.repository.NoteRepository
 import com.example.noteapp.domain.useCase.RescheduleAlarmUseCase
-import com.example.noteapp.presentation.alarm.AlarmScheduler
+import com.example.noteapp.domain.data.alarm.AlarmScheduler
 import com.example.noteapp.presentation.util.alarmUtils.AlarmTimeUtils
 import io.mockk.coEvery
 import io.mockk.every

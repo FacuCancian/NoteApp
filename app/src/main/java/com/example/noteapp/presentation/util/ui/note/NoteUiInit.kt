@@ -1,4 +1,4 @@
-package com.example.noteapp.ui.note
+package com.example.noteapp.presentation.util.ui.note
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxWidth

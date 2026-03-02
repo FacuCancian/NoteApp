@@ -1,4 +1,4 @@
-package com.example.noteapp.presentation.alarm
+package com.example.noteapp.domain.data.alarm
 
 import com.example.noteapp.presentation.util.alarmUtils.AlarmTimeUtils
 import java.util.Calendar

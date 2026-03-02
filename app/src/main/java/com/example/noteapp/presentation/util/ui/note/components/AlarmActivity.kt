@@ -1,4 +1,4 @@
-package com.example.noteapp.ui.note.components
+package com.example.noteapp.presentation.util.ui.note.components
 
 import android.content.Intent
 import android.os.Bundle
@@ -10,7 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.noteapp.presentation.alarm.AlarmService
+import com.example.noteapp.domain.data.alarm.AlarmService
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource

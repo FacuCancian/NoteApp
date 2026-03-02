@@ -1,4 +1,4 @@
-package com.example.noteapp.presentation.alarm
+package com.example.noteapp.domain.data.alarm
 
 import android.content.Context
 import android.content.Intent

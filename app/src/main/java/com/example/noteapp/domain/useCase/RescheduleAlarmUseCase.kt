@@ -1,7 +1,7 @@
 package com.example.noteapp.domain.useCase
 
 import com.example.noteapp.domain.repository.NoteRepository
-import com.example.noteapp.presentation.alarm.AlarmScheduler
+import com.example.noteapp.domain.data.alarm.AlarmScheduler
 import com.example.noteapp.presentation.util.alarmUtils.AlarmTimeUtils
 import java.util.Calendar
 import javax.inject.Inject

@@ -52,8 +52,8 @@ import com.example.noteapp.data.local.entities.Note
 import com.example.noteapp.presentation.noteList.NoteListViewModel
 import com.example.noteapp.presentation.util.alarmUtils.AlarmConstants
 import com.example.noteapp.presentation.util.alarmUtils.AlarmTimeUtils
-import com.example.noteapp.presentation.alarm.calculateNextAlarmTime
-import com.example.noteapp.presentation.alarm.requestExactAlarmPermission
+import com.example.noteapp.domain.data.alarm.calculateNextAlarmTime
+import com.example.noteapp.domain.data.alarm.requestExactAlarmPermission
 import kotlin.collections.ifEmpty
 object WeekUtils {
     val weekLetters = listOf("L","M","MI","J","V","S","D")

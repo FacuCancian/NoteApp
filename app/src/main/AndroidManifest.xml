@@ -32,13 +32,13 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.note.components.AlarmActivity"
+            android:name=".presentation.util.ui.note.components.AlarmActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:launchMode="singleTop"
             android:screenOrientation="portrait" />
         <service
-            android:name=".presentation.alarm.AlarmService"
+            android:name=".domain.data.alarm.AlarmService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
 
@@ -52,7 +52,7 @@
                 android:resource="@xml/file_paths" />
         </provider>
         <receiver
-            android:name="com.example.noteapp.ui.note.components.AlarmReceiver"
+            android:name="com.example.noteapp.presentation.util.ui.note.components.AlarmReceiver"
             android:exported="false" />
 
 

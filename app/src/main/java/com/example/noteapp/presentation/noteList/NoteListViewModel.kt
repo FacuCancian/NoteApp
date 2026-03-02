@@ -9,7 +9,7 @@ import com.example.noteapp.domain.useCase.DeleteNote
 import com.example.noteapp.domain.useCase.GetAllNotes
 import com.example.noteapp.domain.useCase.GetNoteByName
 import com.example.noteapp.domain.useCase.InsertNote
-import com.example.noteapp.presentation.alarm.AlarmScheduler
+import com.example.noteapp.domain.data.alarm.AlarmScheduler
 import com.example.noteapp.presentation.login.NoteListUiState
 import com.example.noteapp.presentation.login.RenameState
 import com.example.noteapp.presentation.login.SaveState

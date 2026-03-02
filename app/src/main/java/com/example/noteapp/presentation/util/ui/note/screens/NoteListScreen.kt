@@ -1,4 +1,4 @@
-package com.example.noteapp.ui.note.screens
+package com.example.noteapp.presentation.util.ui.note.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
