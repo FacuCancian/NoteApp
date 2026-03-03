@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NoteApp — Tus notas, sin vueltas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d0d;
+      --surface: #161616;
+      --card: #1e1e1e;
+      --accent: #c8f135;
+      --accent2: #f1d035;
+      --text: #f0f0f0;
+      --muted: #666;
+      --border: #2a2a2a;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* CUSTOM CURSOR */
+    .cursor {
+      width: 12px; height: 12px;
+      background: var(--accent);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      transition: transform 0.15s ease, opacity 0.2s;
+      mix-blend-mode: difference;
+    }
+    .cursor-ring {
+      width: 36px; height: 36px;
+      border: 1.5px solid var(--accent);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9998;
+      transition: all 0.1s ease;
+      mix-blend-mode: difference;
+    }
+
+    /* GRAIN OVERLAY */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+      border-bottom: 1px solid var(--border);
+      background: rgba(13,13,13,0.85);
+      backdrop-filter: blur(12px);
+    }
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.2rem;
+      letter-spacing: -0.02em;
+    }
+    .logo span { color: var(--accent); }
+    .nav-tag {
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      padding: 120px 40px 60px;
+      gap: 60px;
+      position: relative;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: 20%;
+      right: -100px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(200,241,53,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-left { position: relative; z-index: 2; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(200,241,53,0.08);
+      border: 1px solid rgba(200,241,53,0.25);
+      color: var(--accent);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 2px;
+      margin-bottom: 28px;
+    }
+    .badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(3rem, 6vw, 5.5rem);
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+    }
+    h1 .line { display: block; overflow: hidden; }
+    h1 .line span {
+      display: block;
+      animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    h1 .line:nth-child(2) span { animation-delay: 0.1s; }
+    h1 .line:nth-child(3) span { animation-delay: 0.2s; }
+    h1 .accent-word { color: var(--accent); }
+
+    @keyframes slideUp {
+      from { transform: translateY(110%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .hero-desc {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.8;
+      max-width: 420px;
+      margin-bottom: 40px;
+      animation: fadeIn 1s 0.4s both;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .cta-group {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+      animation: fadeIn 1s 0.5s both;
+    }
+
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--accent);
+      color: #0d0d0d;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.02em;
+      padding: 14px 28px;
+      text-decoration: none;
+      border-radius: 2px;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-download::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--accent2);
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+    }
+    .btn-download:hover::before { transform: translateX(0); }
+    .btn-download span, .btn-download svg { position: relative; z-index: 1; }
+    .btn-download:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(200,241,53,0.3); }
+
+    .btn-secondary {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .btn-secondary:hover { color: var(--text); border-color: var(--text); }
+
+    /* PHONE MOCKUP */
+    .hero-right {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    .phone-wrap {
+      position: relative;
+      animation: float 4s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(-2deg); }
+      50% { transform: translateY(-16px) rotate(-2deg); }
+    }
+
+    .phone {
+      width: 240px;
+      height: 490px;
+      background: var(--card);
+      border-radius: 36px;
+      border: 2px solid var(--border);
+      box-shadow:
+        0 0 0 1px #111,
+        0 40px 80px rgba(0,0,0,0.6),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .phone-notch {
+      width: 80px; height: 20px;
+      background: var(--bg);
+      border-radius: 0 0 14px 14px;
+      margin: 0 auto 12px;
+    }
+
+    .phone-screen {
+      padding: 0 12px;
+    }
+
+    .phone-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+
+    .search-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-bottom: 12px;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .note-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+    .note-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+    }
+    .note-card:nth-child(1)::before { background: var(--accent); }
+    .note-card:nth-child(2)::before { background: var(--accent2); }
+    .note-card:nth-child(3)::before { background: #f135a0; }
+
+    .note-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .note-preview {
+      font-size: 0.58rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .note-alarm {
+      font-size: 0.5rem;
+      color: var(--accent);
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .fab {
+      position: absolute;
+      bottom: 20px; right: 16px;
+      width: 42px; height: 42px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* GLOW RING */
+    .phone-glow {
+      position: absolute;
+      inset: -40px;
+      background: radial-gradient(circle at center, rgba(200,241,53,0.12) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    /* FEATURES */
+    .features {
+      padding: 100px 40px;
+      border-top: 1px solid var(--border);
+    }
+
+    .section-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+
+    .features-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 60px;
+      gap: 40px;
+    }
+
+    .features-header h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      max-width: 500px;
+    }
+
+    .features-header p {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 300px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .feature-item {
+      background: var(--bg);
+      padding: 36px 28px;
+      transition: background 0.3s;
+    }
+    .feature-item:hover { background: var(--surface); }
+
+    .feature-icon {
+      width: 40px; height: 40px;
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px;
+      font-size: 1.1rem;
+      transition: border-color 0.3s;
+    }
+    .feature-item:hover .feature-icon { border-color: var(--accent); }
+
+    .feature-item h3 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+    }
+
+    .feature-item p {
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    /* INSTALL SECTION */
+    .install {
+      padding: 100px 40px;
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .install h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+
+    .install p {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 36px;
+    }
+
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .step {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      padding: 24px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .step:last-child { border-bottom: none; }
+
+    .step-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      min-width: 32px;
+      padding-top: 2px;
+    }
+
+    .step-content h4 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+    }
+
+    .step-content p {
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* FOOTER */
+    footer {
+      padding: 40px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    footer .logo { font-size: 1rem; }
+
+    footer p {
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      nav { padding: 16px 20px; }
+      .hero { grid-template-columns: 1fr; padding: 100px 20px 40px; gap: 40px; }
+      .hero-right { order: -1; }
+      .phone { width: 180px; height: 370px; }
+      .features { padding: 60px 20px; }
+      .features-header { flex-direction: column; align-items: flex-start; }
+      .features-grid { grid-template-columns: 1fr 1fr; }
+      .install { grid-template-columns: 1fr; padding: 60px 20px; gap: 40px; }
+      footer { flex-direction: column; gap: 12px; text-align: center; padding: 30px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- NAV -->
+  <nav>
+    <div class="logo">Note<span>App</span></div>
+    <div class="nav-tag">Android · v1.0</div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-left">
+      <div class="badge">Disponible ahora</div>
+      <h1>
+        <span class="line"><span>Tus notas,</span></span>
+        <span class="line"><span><em class="accent-word">sin</em></span></span>
+        <span class="line"><span>vueltas.</span></span>
+      </h1>
+      <p class="hero-desc">
+        Creá notas, ponele recordatorios, buscalas al toque y compartilas cuando quieras. Sin cuentas, sin suscripciones, sin drama.
+      </p>
+      <div class="cta-group">
+        <a href="app-debug.apk" download class="btn-download">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          <span>Descargar APK</span>
+        </a>
+        <a href="#como-instalar" class="btn-secondary">¿Cómo instalo?</a>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="phone-wrap">
+        <div class="phone-glow"></div>
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="phone-title">Mis notas</div>
+            <div class="search-bar">🔍 Buscar nota...</div>
+            <div class="note-card">
+              <div class="note-name">Lista del super</div>
+              <div class="note-preview">Leche, pan, yerba, medialunas...</div>
+            </div>
+            <div class="note-card">
+              <div class="note-name">Ideas proyecto</div>
+              <div class="note-preview">Refactorizar el ViewModel, agregar tests...</div>
+              <div class="note-alarm">⏰ Mañana 9:00</div>
+            </div>
+            <div class="note-card">
+              <div class="note-name">Poema random</div>
+              <div class="note-preview">A veces las ideas llegan a las 3am...</div>
+            </div>
+          </div>
+          <div class="fab">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#0d0d0d" stroke="#0d0d0d" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features">
+    <div class="features-header">
+      <div>
+        <div class="section-label">// Funcionalidades</div>
+        <h2>Todo lo que necesitás,<br/><span style="color:var(--accent)">nada más.</span></h2>
+      </div>
+      <p>Sin bloat, sin pantallas innecesarias. Abrís la app, escribís, listo. Así de simple.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-item">
+        <div class="feature-icon">📝</div>
+        <h3>Notas rápidas</h3>
+        <p>Escribí lo que necesitás sin fricción. Guardado automático incluido.</p>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">⏰</div>
+        <h3>Recordatorios</h3>
+        <p>Poné alarmas a tus notas. Con repetición diaria o personalizada.</p>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🔍</div>
+        <h3>Búsqueda</h3>
+        <p>Encontrá cualquier nota al instante mientras escribís.</p>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">📤</div>
+        <h3>Compartir</h3>
+        <p>Mandá cualquier nota como .txt por WhatsApp, mail o donde quieras.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSTALL -->
+  <section class="install" id="como-instalar">
+    <div>
+      <div class="section-label">// Instalación</div>
+      <h2>En 3 pasos y ya está.</h2>
+      <p>Como el APK no viene de la Play Store, Android te pide permiso una sola vez. Después es igual que cualquier app.</p>
+      <a href="app-debug.apk" download class="btn-download" style="display:inline-flex;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <span>Descargar APK</span>
+      </a>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-content">
+          <h4>Descargá el APK</h4>
+          <p>Tocá el botón de descarga desde tu Android. El archivo pesa poco, va rápido.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-content">
+          <h4>Permitir fuentes desconocidas</h4>
+          <p>Android te va a preguntar si querés instalar la app. Tocá "Instalar de todas formas". Solo una vez.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-content">
+          <h4>¡Listo! A usarla</h4>
+          <p>Abrís NoteApp y ya podés crear tu primera nota. Sin registro, sin login, sin nada.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="logo">Note<span>App</span></div>
+    <p>Hecho con 🖤 en Android · Kotlin + Jetpack Compose</p>
+  </footer>
+
+  <script>
+    // Custom cursor
+    const cursor = document.getElementById('cursor');
+    const ring = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      cursor.style.left = mx - 6 + 'px';
+      cursor.style.top = my - 6 + 'px';
+    });
+
+    function animateRing() {
+      rx += (mx - rx - 18) * 0.12;
+      ry += (my - ry - 18) * 0.12;
+      ring.style.left = rx + 'px';
+      ring.style.top = ry + 'px';
+      requestAnimationFrame(animateRing);
+    }
+    animateRing();
+
+    // Hover effect on interactive elements
+    document.querySelectorAll('a, button').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        cursor.style.transform = 'scale(2.5)';
+        ring.style.transform = 'scale(0.5)';
+      });
+      el.addEventListener('mouseleave', () => {
+        cursor.style.transform = 'scale(1)';
+        ring.style.transform = 'scale(1)';
+      });
+    });
+
+    // Scroll reveal
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.style.opacity = '1';
+          e.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.feature-item, .step').forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(24px)';
+      el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+      observer.observe(el);
+    });
+  </script>
+</body>
+</html>
