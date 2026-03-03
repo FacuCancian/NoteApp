@@ -103,11 +103,19 @@ class NoteListViewModel @Inject constructor(
         }
     }
 
+    private fun rescheduleIfNeeded(note: Note) {
+        if (note.hasReminder) {
+            alarmScheduler.schedule(note)
+        }
+    }
+
     fun renameNote(note: Note, newName: String) {
         val updateNote = note.copy(name = newName)
         viewModelScope.launch {
             insert.invoke(updateNote)
+            rescheduleIfNeeded(updateNote)
         }
+
     }
 
     fun insertNote(note: Note) {
