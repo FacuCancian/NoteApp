@@ -2,6 +2,8 @@ package com.example.noteapp.presentation.util.ui
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,8 +18,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextRange
@@ -40,10 +46,13 @@ fun NoteEditor(
     onTextChange: (TextFieldValue) -> Unit,
     onLayout: (TextLayoutResult) -> Unit
 ) {
+    val focusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     //Box(weight + verticalScroll + imePadding) to a god layout
     Box(
         modifier = modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .border(
                 width = 1.dp,
                 color = MaterialTheme.colorScheme.outline,
@@ -52,6 +61,13 @@ fun NoteEditor(
             .padding(12.dp)
             .verticalScroll(scrollState)
             .imePadding()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) {
+                focusRequester.requestFocus()
+                keyboardController?.show()
+            }
     ) {
         BasicTextField(
             value = textFieldValue,
@@ -94,7 +110,7 @@ fun NoteEditor(
                     )
                 )
             },
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().focusRequester(focusRequester),
             textStyle = TextStyle(
                 fontSize = 18.sp,
                 color = MaterialTheme.colorScheme.onBackground
@@ -116,12 +132,11 @@ fun NewNoteDialogs(
     onDismissSave: () -> Unit,
     onDismissOverwrite: () -> Unit,
     onDismissUnsaved: () -> Unit,
-    onConfirmSaveFromUnsaved: () -> Unit, // 👈 NUEVO
+    onConfirmSaveFromUnsaved: () -> Unit,
     onBack: () -> Unit,
     onSaveRequested: (String) -> Unit,
     onOverwriteConfirmed: () -> Unit
 ) {
-    /* ========= DIÁLOGOS (TU LÓGICA ORIGINAL) ========= */
 
     SaveOrOverwriteDialog(
         showSaveDialog = showSaveDialog,

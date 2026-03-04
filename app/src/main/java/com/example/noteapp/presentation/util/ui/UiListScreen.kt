@@ -125,7 +125,7 @@ fun DeleteNoteDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.dialog_cancel))
+                Text(stringResource(R.string.dialog_cancel), color = MaterialTheme.colorScheme.onSurface)
             }
         }
     )

@@ -1,12 +1,15 @@
 package com.example.noteapp.presentation.util.ui.note.screens
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -18,7 +21,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -39,11 +48,53 @@ fun NoteApp(
     navController: NavHostController = rememberNavController()
 ){
     var topBarState by remember { mutableStateOf(TopBarState()) }
-
+    var fieldValue by remember { mutableStateOf(TextFieldValue("")) }
+    LaunchedEffect(topBarState.title) {
+        if (topBarState.title != fieldValue.text) {
+            fieldValue = TextFieldValue(
+                text = topBarState.title,
+                selection = TextRange(topBarState.title.length) // cursor al final
+            )
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(topBarState.title) },
+                title = {
+                    if (topBarState.editableTitle && topBarState.onTitleChange != null) {
+                        BasicTextField(
+                            value = fieldValue,
+                            onValueChange = { newValue ->
+                                fieldValue = newValue
+                                topBarState.onTitleChange!!.invoke(newValue.text)
+                            },
+                            singleLine = true,
+                            textStyle = TextStyle(
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            ),
+                            cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
+                            decorationBox = { innerTextField ->
+                                Box {
+                                    if (topBarState.title.isEmpty()) {
+                                        Text(
+                                            "Nueva nota",
+                                            style = TextStyle(
+                                                fontSize = 20.sp,
+                                                fontWeight = FontWeight.Medium,
+                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                                            )
+                                        )
+                                    }
+                                    innerTextField()
+                                }
+                            }
+                        )
+                    } else {
+                        Text(topBarState.title)
+                    }
+                },
                 navigationIcon = {
                     if (topBarState.showBack && topBarState.onBack != null) {
                         IconButton(onClick = topBarState.onBack!!) {
