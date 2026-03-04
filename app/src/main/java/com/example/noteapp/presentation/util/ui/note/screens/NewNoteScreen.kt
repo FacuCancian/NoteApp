@@ -32,7 +32,7 @@ import com.example.noteapp.presentation.util.ui.NoteEditor
 import com.example.noteapp.presentation.util.ui.note.components.TopBarState
 import kotlinx.coroutines.delay
 
-
+private const val DEFAULT_TITLE = "Nueva nota"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewNote(
@@ -49,7 +49,10 @@ fun NewNote(
 
     var showSaveDialog by remember { mutableStateOf(false) }
     var showUnsavedDialog by remember { mutableStateOf(false) }
-    var pendingTitle by remember { mutableStateOf("") }
+    var noteTitle by remember { mutableStateOf("") }
+
+// Helper
+    val hasCustomTitle = noteTitle.isNotBlank()
     var showOverwriteDialog by remember { mutableStateOf(false) }
     var noteToOverwrite by remember { mutableStateOf<Note?>(null) }
 
@@ -70,18 +73,24 @@ fun NewNote(
             is SaveState.Idle -> Unit
         }
     }
-    LaunchedEffect(hasChanges) {
+    // Reemplazar LaunchedEffect(hasChanges) por:
+    LaunchedEffect(hasChanges, noteTitle) {
         setTopBar(
             TopBarState(
-                title = "Nueva nota",
+                title = noteTitle,
+                editableTitle = true,
+                onTitleChange = { noteTitle = it },
                 showBack = true,
                 showSave = hasChanges,
                 onBack = {
-                    if (hasChanges) showUnsavedDialog = true
-                    else back()
+                    if (hasChanges) {
+                        if (hasCustomTitle) viewModel.trySaveNote(noteTitle, textFieldValue.text)
+                        else showUnsavedDialog = true
+                    } else back()
                 },
                 onSave = {
-                    showSaveDialog = true
+                    if (hasCustomTitle) viewModel.trySaveNote(noteTitle, textFieldValue.text)
+                    else showSaveDialog = true
                 }
             )
         )
@@ -103,8 +112,10 @@ fun NewNote(
         }
     }
     BackHandler {
-        if (hasChanges) showUnsavedDialog = true
-        else back()
+        if (hasChanges) {
+            if (hasCustomTitle) viewModel.trySaveNote(noteTitle, textFieldValue.text)
+            else showUnsavedDialog = true
+        } else back()
     }
     Scaffold { padding ->
 
@@ -126,13 +137,13 @@ fun NewNote(
             showSaveDialog = showSaveDialog,
             showOverwriteDialog = showOverwriteDialog,
             showUnsavedDialog = showUnsavedDialog,
-            pendingTitle = pendingTitle,
+            pendingTitle = noteTitle,
             onDismissSave = { showSaveDialog = false },
             onDismissOverwrite = { showOverwriteDialog = false },
             onDismissUnsaved = { showUnsavedDialog = false},
             onBack = back,
             onSaveRequested = { title ->
-                pendingTitle = title
+                noteTitle = title
                 noteToOverwrite = Note(id = null, content = textFieldValue.text, name = title)
                 viewModel.trySaveNote(title, textFieldValue.text)
             },
@@ -143,7 +154,8 @@ fun NewNote(
             },
             onConfirmSaveFromUnsaved = {
                 showUnsavedDialog = false
-                showSaveDialog = true
+                if (hasCustomTitle) viewModel.trySaveNote(noteTitle, textFieldValue.text)
+                else showSaveDialog = true
             }
         )
     }

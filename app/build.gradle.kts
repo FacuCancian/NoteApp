@@ -54,6 +54,8 @@ dependencies {
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.protolite.well.known.types)
     implementation(libs.androidx.lifecycle.process)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.foundation)
     val room_version = "2.7.2"
 
     implementation("androidx.room:room-runtime:$room_version")
