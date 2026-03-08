@@ -29,5 +29,9 @@ interface NoteDao{
     //live find
     @Query("SELECT * FROM Notes WHERE name LIKE '%' || :query || '%' ORDER BY name ASC")
     fun searchNotesByName(query: String): Flow<List<Note>>
+    @Query("SELECT * FROM Notes ORDER BY position ASC")
+    fun getAllNotesByPos(): Flow<List<Note>>
 
+    @Update
+    suspend fun updateNotes(notes: List<Note>)
 }

@@ -7,5 +7,8 @@ data class TopBarState(
     val showBack: Boolean = false,
     val showSave: Boolean = false,
     val onBack: (() -> Unit)? = null,
-    val onSave: (() -> Unit)? = null
+    val onSave: (() -> Unit)? = null,
+    val showGridToggle: Boolean = false,  // 👈
+    val isGridView: Boolean = false,       // 👈
+    val onToggleGrid: (() -> Unit)? = null // 👈
 )

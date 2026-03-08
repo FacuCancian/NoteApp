@@ -39,4 +39,8 @@ class NoteRepositoryImpl(private val dao: NoteDao) : NoteRepository {
         return dao.searchNotesByName(query)
     }
 
+    override suspend fun updateNoteOrder(notes: List<Note>) {
+        dao.updateNotes(notes)
+    }
+
 }

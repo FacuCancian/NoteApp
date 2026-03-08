@@ -6,6 +6,8 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -22,7 +24,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -35,7 +36,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.noteapp.R
 import com.example.noteapp.presentation.login.NoteListUiState
 import com.example.noteapp.presentation.noteList.NoteListViewModel
 import com.example.noteapp.presentation.util.ui.note.NoteScreen
@@ -46,7 +46,7 @@ import com.example.noteapp.presentation.util.ui.note.components.TopBarState
 @Composable
 fun NoteApp(
     navController: NavHostController = rememberNavController()
-){
+) {
     var topBarState by remember { mutableStateOf(TopBarState()) }
     var fieldValue by remember { mutableStateOf(TextFieldValue("")) }
     LaunchedEffect(topBarState.title) {
@@ -83,7 +83,9 @@ fun NoteApp(
                                             style = TextStyle(
                                                 fontSize = 20.sp,
                                                 fontWeight = FontWeight.Medium,
-                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                                                color = MaterialTheme.colorScheme.onSurface.copy(
+                                                    alpha = 0.4f
+                                                )
                                             )
                                         )
                                     }
@@ -103,6 +105,14 @@ fun NoteApp(
                     }
                 },
                 actions = {
+                    if (topBarState.showGridToggle && topBarState.onToggleGrid != null) {
+                        IconButton(onClick = topBarState.onToggleGrid!!) {
+                            Icon(
+                                imageVector = if (topBarState.isGridView) Icons.Default.List else Icons.Default.GridView,
+                                contentDescription = "Cambiar vista"
+                            )
+                        }
+                    }
                     if (topBarState.showSave && topBarState.onSave != null) {
                         IconButton(onClick = topBarState.onSave!!) {
                             Icon(Icons.Default.Check, contentDescription = "Guardar")
@@ -118,23 +128,16 @@ fun NoteApp(
             modifier = Modifier.padding(padding)
         ) {
             composable(route = NoteScreen.Start.name) {
-                val appName = stringResource(R.string.app_name)
-
-                LaunchedEffect(Unit) {
-                    topBarState = TopBarState(
-                        title = appName
-                    )
-                }
-
+                val noteListViewModel: NoteListViewModel = hiltViewModel()
                 NoteList(
-                    noteListViewModel = hiltViewModel(),
-                    modifier = Modifier,
+                    noteListViewModel = noteListViewModel,
                     onNoteClick = { note ->
                         navController.navigate("${NoteScreen.NoteInfo.name}/${note.id}")
                     },
                     onButtonClick = {
                         navController.navigate(NoteScreen.New.name)
-                    }
+                    },
+                    setTopBar = { topBarState = it }
                 )
             }
             composable(

@@ -15,6 +15,7 @@ data class Note(
     val content: String,
     @ColumnInfo(name = "name")
     val name: String,
+    val position: Int = 0,
     val reminderDateTime: Long? = null,
     val repeatDays: List<Int>? = null,
     val hasReminder: Boolean = false,

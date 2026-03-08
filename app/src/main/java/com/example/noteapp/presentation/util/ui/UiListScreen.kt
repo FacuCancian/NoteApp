@@ -4,12 +4,12 @@ import android.os.Build
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -45,16 +45,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.noteapp.R
 import com.example.noteapp.data.local.entities.Note
+import com.example.noteapp.domain.data.alarm.calculateNextAlarmTime
+import com.example.noteapp.domain.data.alarm.requestExactAlarmPermission
 import com.example.noteapp.presentation.noteList.NoteListViewModel
 import com.example.noteapp.presentation.util.alarmUtils.AlarmConstants
 import com.example.noteapp.presentation.util.alarmUtils.AlarmTimeUtils
-import com.example.noteapp.domain.data.alarm.calculateNextAlarmTime
-import com.example.noteapp.domain.data.alarm.requestExactAlarmPermission
-import kotlin.collections.ifEmpty
+
 object WeekUtils {
     val weekLetters = listOf("L","M","MI","J","V","S","D")
 }
@@ -62,15 +64,15 @@ object WeekUtils {
 fun NoteCardContent(
     note: Note,
     onClick: () -> Unit,
-    onLongClick: () ->Unit,
     onDeleteClick: () -> Unit,
     onAlarmClick: () -> Unit,
-    onShareClick: () -> Unit
+    onShareClick: () -> Unit,
+    reorderModifier: Modifier = Modifier,
 ) {
     Card(
-        modifier = Modifier
+        modifier = reorderModifier
             .fillMaxWidth()
-            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
+            .clickable { onClick() }
     ) {
         Row(Modifier.padding(16.dp)) {
             Text(note.name, modifier = Modifier.weight(1f), fontSize = 18.sp)
@@ -259,6 +261,68 @@ fun RepeatDaysRow(
                 contentAlignment = Alignment.Center
             ) {
                 Text(letter, color = if (isSelected) Color.White else Color.Black)
+            }
+        }
+    }
+}
+@Composable
+fun NoteGridCard(
+    note: Note,
+    onClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+    onAlarmClick: () -> Unit,
+    onShareClick: () -> Unit,
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(120.dp)
+            .clickable { onClick() }
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Text(
+                text = note.name,
+                fontSize = 14.sp,
+                maxLines = 3,
+                textAlign = TextAlign.Center,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.Center)
+                    .padding(horizontal = 12.dp)
+                    .padding(bottom = 32.dp)
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Icon(
+                    painter = painterResource(
+                        if (note.hasReminder) R.drawable.bell_active_icon
+                        else R.drawable.bell_icon
+                    ),
+                    contentDescription = null,
+                    tint = Color(0xFF64B5F6),
+                    modifier = Modifier.size(20.dp).clickable { onAlarmClick() }
+                )
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = null,
+                    tint = Color.Red,
+                    modifier = Modifier.size(20.dp).clickable { onDeleteClick() }
+                )
+                Icon(
+                    imageVector = Icons.Default.Share,
+                    contentDescription = null,
+                    tint = Color(0xFF64B5F6),
+                    modifier = Modifier.size(20.dp).clickable { onShareClick() }
+                )
             }
         }
     }

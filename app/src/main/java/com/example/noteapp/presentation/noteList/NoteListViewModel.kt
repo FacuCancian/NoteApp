@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.noteapp.data.local.entities.Note
+import com.example.noteapp.data.repository.ViewPreferencesRepository
 import com.example.noteapp.domain.repository.NoteRepository
 import com.example.noteapp.domain.useCase.DeleteNote
 import com.example.noteapp.domain.useCase.GetAllNotes
@@ -11,7 +12,6 @@ import com.example.noteapp.domain.useCase.GetNoteByName
 import com.example.noteapp.domain.useCase.InsertNote
 import com.example.noteapp.domain.data.alarm.AlarmScheduler
 import com.example.noteapp.presentation.login.NoteListUiState
-import com.example.noteapp.presentation.login.RenameState
 import com.example.noteapp.presentation.login.SaveState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -59,32 +59,6 @@ class NoteListViewModel @Inject constructor(
             started = SharingStarted.Lazily,
             initialValue = NoteListUiState.Loading
         )
-    private val _selectedNote = MutableStateFlow<Note?>(null)
-    val selectedNote: StateFlow<Note?> = _selectedNote
-
-    fun loadNote(id: Int) {
-        if (_selectedNote.value?.id == id) return
-        viewModelScope.launch {
-            _selectedNote.value = repository.getNoteById(id.toLong())
-        }
-    }
-
-    fun clearSelectedNote() {
-        _selectedNote.value = null
-    }
-    private val _renameState = MutableStateFlow<RenameState>(RenameState.Idle)
-    val renameState: StateFlow<RenameState> = _renameState
-    fun tryRenameNote(note: Note, newName: String) {
-        viewModelScope.launch {
-            val exists = doesNoteExist(newName)
-            if (exists) {
-                _renameState.value = RenameState.NoteExists
-            } else {
-                renameNote(note, newName)
-                _renameState.value = RenameState.RenameDone
-            }
-        }
-    }
 
     private val _saveState = MutableStateFlow<SaveState>(SaveState.Idle)
     val saveState: StateFlow<SaveState> = _saveState
@@ -96,14 +70,20 @@ class NoteListViewModel @Inject constructor(
         _saveState.value = SaveState.Idle
     }
 
-    fun resetRenameState() {
-        _renameState.value = RenameState.Idle
-    }
-
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
     }
+    // en NoteListViewModel
+    private val viewPrefsRepo = ViewPreferencesRepository(application)
 
+    val isGridView: StateFlow<Boolean> = viewPrefsRepo.isGridView
+        .stateIn(viewModelScope, SharingStarted.Lazily, false)
+
+    fun toggleViewMode() {
+        viewModelScope.launch {
+            viewPrefsRepo.setGridView(!isGridView.value)
+        }
+    }
     fun trySaveNote(title: String, content: String) {
         viewModelScope.launch {
             val exists = doesNoteExist(title)
@@ -165,5 +145,11 @@ class NoteListViewModel @Inject constructor(
             repeatDays = null
         )
         insertNote(updated)
+    }
+    fun updateNoteOrder(notes: List<Note>) {
+        viewModelScope.launch {
+            val reordered = notes.mapIndexed { index, note -> note.copy(position = index) }
+            repository.updateNoteOrder(reordered)
+        }
     }
 }

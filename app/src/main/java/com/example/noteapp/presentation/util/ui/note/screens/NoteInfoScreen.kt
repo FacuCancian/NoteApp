@@ -15,13 +15,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.example.noteapp.data.local.entities.Note
-import com.example.noteapp.presentation.util.ui.note.components.TopBarState
-
-import androidx.compose.ui.text.input.TextFieldValue
 import com.example.noteapp.presentation.util.ui.NoteInfoDialogs
 import com.example.noteapp.presentation.util.ui.NoteInfoEditor
+import com.example.noteapp.presentation.util.ui.note.components.TopBarState
 import kotlinx.coroutines.delay
 
 @Composable

@@ -33,9 +33,11 @@ object AppModule {
             .addMigrations(
                 NoteDataBase.MIGRATION_1_2,
                 NoteDataBase.MIGRATION_2_3,
-                NoteDataBase.MIGRATION_3_4
+                NoteDataBase.MIGRATION_3_4,
+                NoteDataBase.MIGRATION_4_5
             )
-            .build()    }
+            .build()
+    }
 
     @Provides
     fun provideNoteDao(dataBase: NoteDataBase): NoteDao {
