@@ -2,6 +2,8 @@ package com.example.noteapp.presentation.util.ui
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,8 +18,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextRange
@@ -38,6 +44,8 @@ fun NoteInfoEditor(
     onTextChange: (TextFieldValue) -> Unit,
     onLayout: (TextLayoutResult) -> Unit
 ) {
+    val focusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
     //Box(weight + verticalScroll + imePadding) to a god layout
     Box(
         modifier = modifier
@@ -47,53 +55,29 @@ fun NoteInfoEditor(
                 color = MaterialTheme.colorScheme.outline,
                 shape = RoundedCornerShape(12.dp)
             )
-            .padding(12.dp) // padding interno// 👈 ocupa el resto
+            .padding(12.dp)
             .verticalScroll(scrollState)
-            .imePadding()               // 👈 CLAVE
+            .imePadding()
+            .clickable( // 👈 esto faltaba
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) {
+                focusRequester.requestFocus()
+                keyboardController?.show()
+                onTextChange(
+                    textFieldValue.copy(
+                        selection = TextRange(textFieldValue.text.length)
+                    )
+                )
+            }
     ) {
         BasicTextField(
             value = textFieldValue,
             onValueChange = { newValue ->
-
-                val oldText = textFieldValue.text
-                val newText = newValue.text
-
-                var finalText = newText
-                var finalSelection = newValue.selection
-
-                if (newText.length > oldText.length) {
-
-                    val i = newValue.selection.end - 1
-                    val lastChar = newText.getOrNull(i)
-
-                    val shouldCapitalize =
-                        i == 0 ||
-                                newText.getOrNull(i - 1) == '\n' ||
-                                (newText.getOrNull(i - 2) == '.' && newText.getOrNull(i - 1) == ' ')
-
-                    if (
-                        shouldCapitalize &&
-                        lastChar != null &&
-                        lastChar.isLetter() &&
-                        lastChar.isLowerCase()
-                    ) {
-                        finalText =
-                            newText.substring(0, i) +
-                                    lastChar.uppercaseChar() +
-                                    newText.substring(i + 1)
-
-                        finalSelection = TextRange(i + 1)
-                    }
-                }
-
-                onTextChange(
-                    newValue.copy(
-                        text = finalText,
-                        selection = finalSelection
-                    )
-                )
+                onTextChange(applyAutoCapitalize(textFieldValue, newValue))
             },
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize()
+            .focusRequester(focusRequester),
             textStyle = TextStyle(
                 fontSize = 18.sp,
                 color = MaterialTheme.colorScheme.onBackground
@@ -105,6 +89,7 @@ fun NoteInfoEditor(
         )
     }
 }
+
 @Composable
 fun NoteInfoDialogs(
     showUnsavedDialog: Boolean,
@@ -143,4 +128,25 @@ fun NoteInfoDialogs(
             }
         )
     }
+}
+fun applyAutoCapitalize(oldValue: TextFieldValue, newValue: TextFieldValue): TextFieldValue {
+    val oldText = oldValue.text
+    val newText = newValue.text
+
+    if (newText.length <= oldText.length) return newValue
+
+    val i = newValue.selection.end - 1
+    val lastChar = newText.getOrNull(i) ?: return newValue
+
+    val shouldCapitalize =
+        i == 0 ||
+                newText.getOrNull(i - 1) == '\n' ||
+                (newText.getOrNull(i - 2) == '.' && newText.getOrNull(i - 1) == ' ')
+
+    if (!shouldCapitalize || !lastChar.isLetter() || !lastChar.isLowerCase()) return newValue
+
+    return newValue.copy(
+        text = newText.substring(0, i) + lastChar.uppercaseChar() + newText.substring(i + 1),
+        selection = TextRange(i + 1)
+    )
 }

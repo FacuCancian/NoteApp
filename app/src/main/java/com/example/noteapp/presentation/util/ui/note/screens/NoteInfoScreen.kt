@@ -26,38 +26,37 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun NoteInfo(
-    note: Note,
-    onSave: (Note) -> Unit,
-    onNoteSaved: () -> Unit,
-    setTopBar: (TopBarState) -> Unit
+    note: Note, onSave: (Note) -> Unit, onNoteSaved: () -> Unit, setTopBar: (TopBarState) -> Unit
 ) {
     val scrollState = rememberScrollState()
+    val originalContent = remember { note.content }
+    val originalName = remember { note.name }
+    var currentTitle by remember { mutableStateOf(note.name) }
 
     var textFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue(note.content))
     }
 
     var showUnsavedDialog by remember { mutableStateOf(false) }
-
-    val hasChanges = textFieldValue.text != note.content
+    val hasChanges = textFieldValue.text != originalContent || currentTitle != originalName
     var lastTextLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }//to follow the cursor
 
     LaunchedEffect(hasChanges) {
         setTopBar(
             TopBarState(
-                title = note.name,
-                showBack = true,
-                showSave = hasChanges,
-                onBack = {
-                    if (hasChanges) showUnsavedDialog = true
-                    else onNoteSaved()
-                },
-                onSave = {
-                    onSave(note.copy(content = textFieldValue.text))
-                    onNoteSaved()
-                }
-            )
-        )
+            title = currentTitle,
+            editableTitle = true,
+            showBack = true,
+            onTitleChange = { currentTitle = it },
+            showSave = hasChanges,
+            onBack = {
+                if (hasChanges) showUnsavedDialog = true
+                else onNoteSaved()
+            },
+            onSave = {
+                onSave(note.copy(name = currentTitle, content = textFieldValue.text))
+                onNoteSaved()
+            }))
     }
 
     LaunchedEffect(textFieldValue.selection) {
@@ -81,9 +80,7 @@ fun NoteInfo(
 
     Scaffold { innerPadding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp)
+            modifier = Modifier.fillMaxSize().padding(8.dp)
         ) {
 
             NoteInfoEditor(
@@ -91,22 +88,20 @@ fun NoteInfo(
                 scrollState = scrollState,
                 textFieldValue = textFieldValue,
                 onTextChange = { textFieldValue = it },
-                onLayout = { lastTextLayoutResult = it }
-            )
+                onLayout = { lastTextLayoutResult = it })
         }
 
         NoteInfoDialogs(
             showUnsavedDialog = showUnsavedDialog,
             onDismiss = { showUnsavedDialog = false },
             onSave = {
-                onSave(note.copy(content = textFieldValue.text))
+                onSave(note.copy(name = currentTitle, content = textFieldValue.text))
                 showUnsavedDialog = false
                 onNoteSaved()
             },
             onDiscard = {
                 showUnsavedDialog = false
                 onNoteSaved()
-            }
-        )
+            })
     }
 }

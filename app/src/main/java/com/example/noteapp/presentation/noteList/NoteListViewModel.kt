@@ -59,6 +59,19 @@ class NoteListViewModel @Inject constructor(
             started = SharingStarted.Lazily,
             initialValue = NoteListUiState.Loading
         )
+    private val _selectedNote = MutableStateFlow<Note?>(null)
+    val selectedNote: StateFlow<Note?> = _selectedNote
+
+    fun loadNote(id: Int) {
+        if (_selectedNote.value?.id == id) return
+        viewModelScope.launch {
+            _selectedNote.value = repository.getNoteById(id.toLong())
+        }
+    }
+
+    fun clearSelectedNote() {
+        _selectedNote.value = null
+    }
     private val _renameState = MutableStateFlow<RenameState>(RenameState.Idle)
     val renameState: StateFlow<RenameState> = _renameState
     fun tryRenameNote(note: Note, newName: String) {
