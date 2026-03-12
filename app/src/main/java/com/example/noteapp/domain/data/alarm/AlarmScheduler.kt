@@ -7,7 +7,11 @@ import android.content.Intent
 import com.example.noteapp.data.local.entities.Note
 import com.example.noteapp.presentation.util.ui.note.components.AlarmReceiver
 import android.app.AlarmManager
+import android.util.Log
 import com.example.noteapp.presentation.util.alarmUtils.AlarmConstants
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 open class AlarmScheduler @Inject constructor(private val context: Context) {
@@ -15,7 +19,19 @@ open class AlarmScheduler @Inject constructor(private val context: Context) {
 
     @SuppressLint("ScheduleExactAlarm")
     open fun schedule(note: Note) {
-        if (note.reminderDateTime == null || note.id == null) return
+        if (note.reminderDateTime == null || note.id == null){
+            Log.e("AlarmScheduler", "schedule() abortado — id=${note.id} time=${note.reminderDateTime}")
+            return
+        }
+        Log.d("AlarmScheduler", """
+        schedule() llamado
+        noteId     = ${note.id}
+        title      = ${note.name}
+        triggerAt  = ${SimpleDateFormat("dd/MM HH:mm:ss", Locale.getDefault()).format(Date(note.reminderDateTime))}
+        repeatDays = ${note.repeatDays}
+        forever    = ${note.repeatForever}
+        hasReminder= ${note.hasReminder}
+    """.trimIndent())
 
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             putExtra(AlarmConstants.EXTRA_NOTE_ID, note.id)

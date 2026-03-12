@@ -5,6 +5,7 @@ import com.example.noteapp.domain.data.alarm.calculateNextAlarmTime
 import java.util.Calendar
 
 object AlarmTimeUtils {
+
     val dayMap = mapOf(
         1 to Calendar.MONDAY,
         2 to Calendar.TUESDAY,
@@ -28,6 +29,7 @@ object AlarmTimeUtils {
 
         return hour to minute
     }
+
     fun formatTimeUntil(triggerTime: Long): String {
         val diffMillis = triggerTime - System.currentTimeMillis()
 
@@ -47,10 +49,12 @@ object AlarmTimeUtils {
                 else
                     "${totalDays}d"
             }
+
             totalHours > 0 -> "${totalHours}h ${minutes}m"
             else -> "${minutes}m"
         }
     }
+
     fun calculateNextFromNote(note: Note): Long? {
         val repeatDays = note.repeatDays ?: return null
 

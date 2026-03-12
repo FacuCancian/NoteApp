@@ -18,12 +18,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.example.noteapp.R
 import com.example.noteapp.presentation.util.alarmUtils.AlarmConstants
+import com.example.noteapp.presentation.util.alarmUtils.AlarmConstants.ACTION_SNOOZE
+import com.example.noteapp.presentation.util.alarmUtils.AlarmConstants.ACTION_STOP
+import com.example.noteapp.presentation.util.alarmUtils.AlarmConstants.isRunning
 
 class AlarmActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
 
-        if (!AlarmService.isRunning) {
+        if (!isRunning) {
             finish()
         }
     }
@@ -80,7 +83,7 @@ class AlarmActivity : ComponentActivity() {
     private fun stopAlarm() {
         val currentId = intent.getIntExtra(AlarmConstants.EXTRA_NOTE_ID, -1)
         val intent = Intent(this, AlarmService::class.java).apply {
-            action = AlarmService.ACTION_STOP
+            action = ACTION_STOP
             putExtra(AlarmConstants.EXTRA_NOTE_ID, currentId)
             putExtra(AlarmConstants.EXTRA_NOTE_TITLE, title)
         }
@@ -92,7 +95,7 @@ class AlarmActivity : ComponentActivity() {
         val currentId = intent.getIntExtra(AlarmConstants.EXTRA_NOTE_ID, -1)
         val noteTitle = intent.getStringExtra(AlarmConstants.EXTRA_NOTE_TITLE)
         val intent = Intent(this, AlarmService::class.java).apply {
-            action = AlarmService.ACTION_SNOOZE
+            action = ACTION_SNOOZE
             putExtra(AlarmConstants.EXTRA_NOTE_ID, currentId)
             putExtra(AlarmConstants.EXTRA_NOTE_TITLE, noteTitle)
         }

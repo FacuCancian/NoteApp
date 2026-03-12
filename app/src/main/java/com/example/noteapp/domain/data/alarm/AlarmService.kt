@@ -17,9 +17,16 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import com.example.noteapp.presentation.util.ui.note.components.AlarmReceiver
 import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
 import com.example.noteapp.domain.useCase.RescheduleAlarmUseCase
 import com.example.noteapp.presentation.util.alarmUtils.AlarmConstants
+import com.example.noteapp.presentation.util.alarmUtils.AlarmConstants.ACTION_SNOOZE
+import com.example.noteapp.presentation.util.alarmUtils.AlarmConstants.ACTION_START
+import com.example.noteapp.presentation.util.alarmUtils.AlarmConstants.ACTION_STOP
+import com.example.noteapp.presentation.util.alarmUtils.AlarmConstants.CHANNEL_ID
+import com.example.noteapp.presentation.util.alarmUtils.AlarmConstants.NOTIFICATION_ID
+import com.example.noteapp.presentation.util.alarmUtils.AlarmConstants.isRunning
 import com.example.noteapp.presentation.util.alarmUtils.AlarmTimeUtils
 import com.example.noteapp.presentation.util.ui.note.components.AlarmActivity
 import dagger.hilt.android.AndroidEntryPoint
@@ -40,16 +47,6 @@ import java.util.Locale
 class AlarmService : Service() {
     @Inject
     lateinit var rescheduleAlarmUseCase: RescheduleAlarmUseCase
-
-    companion object {
-        const val ACTION_STOP = "STOP_ALARM"
-        const val ACTION_SNOOZE = "SNOOZE_ALARM"
-        private const val CHANNEL_ID = "alarm_channel"
-        private const val NOTIFICATION_ID = 1001
-
-        var isRunning = false
-
-    }
 
     private var vibrator: Vibrator? = null
     private var ringtone: Ringtone? = null
@@ -104,13 +101,27 @@ class AlarmService : Service() {
             stopSelf()
             return START_NOT_STICKY
         }
-        currentNoteId = intent?.getIntExtra(AlarmConstants.EXTRA_NOTE_ID, -1) ?: -1
-        alarmTitle =
-            intent?.getStringExtra(AlarmConstants.EXTRA_NOTE_TITLE) ?: AlarmConstants.DEFAULT
+        Log.d("AlarmService", "onStartCommand action=${intent?.action} (extras aún no leídos)")
+
+
 
         when (intent?.action) {
+            ACTION_START -> {
+                currentNoteId = intent?.getIntExtra(AlarmConstants.EXTRA_NOTE_ID, -1) ?: -1
+                alarmTitle =
+                    intent?.getStringExtra(AlarmConstants.EXTRA_NOTE_TITLE) ?: AlarmConstants.DEFAULT
+                val id = intent?.getIntExtra(AlarmConstants.EXTRA_NOTE_ID, -1)
+                val t = intent?.getStringExtra(AlarmConstants.EXTRA_NOTE_TITLE)
+                Log.d("AlarmService", "ACTION_START recibido — noteId=$id title=$t")
+                startForegroundAlarm(intent)
+            }
             ACTION_STOP -> {
-                CoroutineScope(Dispatchers.IO).launch {
+                val noteId = intent?.getIntExtra(AlarmConstants.EXTRA_NOTE_ID, -1) ?: -1
+                val title = intent?.getStringExtra(AlarmConstants.EXTRA_NOTE_TITLE) ?: AlarmConstants.DEFAULT
+                currentNoteId = noteId
+                alarmTitle = title
+                userInteracted = true
+                serviceScope.launch(Dispatchers.IO) {
                     if (currentNoteId != -1) {
                         val nextTime = rescheduleAlarmUseCase.execute(currentNoteId.toLong())
                         nextTime?.let {
@@ -123,8 +134,6 @@ class AlarmService : Service() {
                             }
                         }
                     }
-
-                    userInteracted = true
                     withContext(Dispatchers.Main) {
                         stopAlarm()
                     }
@@ -134,13 +143,18 @@ class AlarmService : Service() {
             }
 
             ACTION_SNOOZE -> {
+                currentNoteId = intent?.getIntExtra(AlarmConstants.EXTRA_NOTE_ID, -1) ?: -1
+                alarmTitle = intent?.getStringExtra(AlarmConstants.EXTRA_NOTE_TITLE) ?: AlarmConstants.DEFAULT
+                userInteracted = true
                 snoozeAlarm(intent)
                 stopAlarm()
-                userInteracted = true
                 return START_NOT_STICKY
             }
 
-            else -> startForegroundAlarm(intent)
+            else -> {
+                Log.e("AlarmService", "onStartCommand con action=null, abortando")
+                stopSelf()
+            }
         }
         return START_STICKY
     }
@@ -157,9 +171,7 @@ class AlarmService : Service() {
 
             if (!userInteracted) {
                 userInteracted = true
-
                 handleMissedAlarm()
-
                 stopAlarm()
             }
         }
@@ -178,7 +190,27 @@ class AlarmService : Service() {
             putExtra(AlarmConstants.EXTRA_NOTE_TITLE, alarmTitle)
             action = ACTION_SNOOZE
         }
+        val stopPending = PendingIntent.getService(
+            this,
+            noteId * 10 + 0,
+            Intent(this, AlarmService::class.java).apply {
+                putExtra(AlarmConstants.EXTRA_NOTE_ID, noteId)
+                putExtra(AlarmConstants.EXTRA_NOTE_TITLE, alarmTitle)
+                action = ACTION_STOP
+            },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
 
+        val snoozePending = PendingIntent.getService(
+            this,
+            noteId * 10 + 1,
+            Intent(this, AlarmService::class.java).apply {
+                putExtra(AlarmConstants.EXTRA_NOTE_ID, noteId)
+                putExtra(AlarmConstants.EXTRA_NOTE_TITLE, alarmTitle)
+                action = ACTION_SNOOZE
+            },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
         PendingIntent.getService(
             this,
             stopRequestCode,
@@ -195,7 +227,7 @@ class AlarmService : Service() {
         val activityIntent = Intent(this, AlarmActivity::class.java).apply {
             putExtra(AlarmConstants.EXTRA_NOTE_ID, noteId)
             putExtra(AlarmConstants.EXTRA_NOTE_TITLE, alarmTitle)
-           flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_CLEAR_TOP or
                     Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
@@ -219,6 +251,8 @@ class AlarmService : Service() {
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(activityPending)
+            .addAction(0, AlarmConstants.STOPALARM, stopPending)
+            .addAction(0, AlarmConstants.POS, snoozePending)
             .setOngoing(true)
             .build()
 
