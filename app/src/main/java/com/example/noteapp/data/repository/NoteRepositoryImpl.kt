@@ -7,9 +7,7 @@ import kotlinx.coroutines.flow.Flow
 
 class NoteRepositoryImpl(private val dao: NoteDao) : NoteRepository {
 
-    override fun getAllNotes(): Flow<List<Note>> {
-        return dao.getAllNotes()
-    }
+    override fun getAllNotes(): Flow<List<Note>> = dao.getAllNotesByPos()
 
     override suspend fun getNoteById(id: Long): Note? {
         return dao.getNoteById(id)
@@ -35,9 +33,7 @@ class NoteRepositoryImpl(private val dao: NoteDao) : NoteRepository {
         TODO("Not yet implemented")
     }
 
-    override suspend fun searchNotes(query: String): Flow<List<Note>> {
-        return dao.searchNotesByName(query)
-    }
+    override fun searchNotes(query: String): Flow<List<Note>> = dao.searchNotesByName(query)
 
     override suspend fun updateNoteOrder(notes: List<Note>) {
         dao.updateNotes(notes)

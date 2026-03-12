@@ -13,6 +13,6 @@ interface NoteRepository {
     suspend fun shareNote(note: Note)
     suspend fun exportNote(note: Note)
 
-    suspend fun searchNotes(query: String): Flow<List<Note>>
+    fun searchNotes(query: String): Flow<List<Note>>
     suspend fun updateNoteOrder(notes: List<Note>)
 }
